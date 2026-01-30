@@ -22,14 +22,14 @@ class NetworkManager:
 
     def switch_to_hotspot(self):
         """Activates the Access Point mode"""
-        logger.info("📡 Transitioning to Hotspot mode...")
+        logger.info("Transitioning to Hotspot mode...")
         # nmcli con up will automatically handle disconnecting from existing WiFi
         success, output = self._run_cmd(["sudo", "nmcli", "con", "up", self.hotspot_name])
         return success
 
     def switch_to_wifi(self, ssid, password):
         """Attempts to connect to a WiFi network with a fallback to Hotspot"""
-        logger.info(f"🌐 Attempting to connect to WiFi: {ssid}...")
+        logger.info(f"Attempting to connect to WiFi: {ssid}...")
         
         # 1. Try to connect to the new WiFi
         # We use a 30 second timeout for the connection attempt
@@ -42,13 +42,13 @@ class NetworkManager:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
-                logger.info("✅ WiFi Connected successfully!")
+                logger.info("WiFi Connected successfully!")
                 return True
             else:
                 raise Exception("WiFi auth failed")
 
         except (subprocess.TimeoutExpired, Exception) as e:
-            logger.warning(f"❌ Connection failed. Falling back to Hotspot: {e}")
+            logger.warning(f"Connection failed. Falling back to Hotspot: {e}")
             self.switch_to_hotspot()
             return False
 
