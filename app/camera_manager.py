@@ -17,7 +17,7 @@ class CameraManager:
         self.is_running = True
         
         # Save everything directly to the project folder
-        base_path = f"/home/pi/HoloScopeV02/data/{project_name}"
+        base_path = f"/home/pi/HoloScopeV02/data/"
         os.makedirs(base_path, exist_ok=True)
         
         try:
@@ -29,7 +29,7 @@ class CameraManager:
                     # LONG UNIQUE FILENAME: project_date_time_index.jpg
                     # This ensures files are unique and sortable by name
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = f"{base_path}/{project_name}_{timestamp}_{i:03d}.dnf"
+                    filename = f"{base_path}/{project_name}_{timestamp}_{i:03d}.dng"
 
                     cmd = [
                         "rpicam-still",
