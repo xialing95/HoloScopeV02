@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from typing import List
 from network_manager import NetworkManager
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -54,19 +55,30 @@ async def delete_file(filename: str):
         return {"status": "deleted"}
     raise HTTPException(status_code=404, detail="File not found")
 
-@app.post("/api/network/hotspot")
-async def start_hotspot():
-    success = nav.switch_to_hotspot()
-    if success:
-        return {"status": "Switching to Hotspot. Reconnect your Mac to HoloScope_AP"}
-    return {"status": "Error"}
+# 1. Define the data structure expected from JS
+class NetworkRequest(BaseModel):
+    mode: str
+    ssid: str = None  # Optional, only needed for wifi
+    password: str = None
 
-@app.post("/api/network/wifi")
-async def start_wifi():
-    success = nav.switch_to_wifi()
-    if success:
-        return {"status": "Switching to WiFi. Reconnect your Mac to your home network"}
-    return {"status": "Error"}
+@app.post("/api/network")
+async def handle_network(request: NetworkRequest, background_tasks: BackgroundTasks):
+    """Unified endpoint to switch between Hotspot and WiFi"""
+    
+    # We use a background task so the 200 OK response 
+    # reaches your browser BEFORE the WiFi cuts out.
+    if request.mode == "hotspot":
+        background_tasks.add_task( NetworkManager.switch_to_hotspot)
+        return {"status": "Success", "detail": "Switching to Hotspot..."}
+    
+    elif request.mode == "wifi":
+        if not request.ssid or not request.password:
+            return {"status": "Error", "detail": "SSID and Password required for WiFi mode"}
+        
+        background_tasks.add_task( NetworkManager.switch_to_wifi, request.ssid, request.password)
+        return {"status": "Success", "detail": f"Connecting to {request.ssid}..."}
+    
+    return {"status": "Error", "detail": "Invalid mode"}
 
 if __name__ == "__main__":
     import uvicorn

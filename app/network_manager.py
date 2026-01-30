@@ -1,39 +1,78 @@
 import subprocess
 import time
+import logging
+
+# Setup logging to see what's happening in the background
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("NetworkManager")
 
 class NetworkManager:
-    def __init__(self, wifi_ssid, wifi_pass, hotspot_name="HoloScope_AP"):
-        self.wifi_ssid = wifi_ssid
-        self.wifi_pass = wifi_pass
+    def __init__(self, hotspot_name="HoloScope_AP"):
         self.hotspot_name = hotspot_name
+        self.interface = "wlan0"
+
+    def _run_cmd(self, cmd):
+        """Helper to run shell commands safely"""
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return True, result.stdout
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Command failed: {' '.join(cmd)} - {e.stderr}")
+            return False, e.stderr
 
     def switch_to_hotspot(self):
-        """Disconnects WiFi and starts the Access Point"""
-        print(f"📡 Switching to Hotspot: {self.hotspot_name}...")
+        """Activates the Access Point mode"""
+        logger.info("📡 Transitioning to Hotspot mode...")
+        # nmcli con up will automatically handle disconnecting from existing WiFi
+        success, output = self._run_cmd(["sudo", "nmcli", "con", "up", self.hotspot_name])
+        return success
+
+    def switch_to_wifi(self, ssid, password):
+        """Attempts to connect to a WiFi network with a fallback to Hotspot"""
+        logger.info(f"🌐 Attempting to connect to WiFi: {ssid}...")
+        
+        # 1. Try to connect to the new WiFi
+        # We use a 30 second timeout for the connection attempt
         try:
-            # Down the wifi interface connection
-            subprocess.run(["sudo", "nmcli", "con", "down", self.wifi_ssid], check=False)
-            # Up the hotspot connection
-            subprocess.run(["sudo", "nmcli", "con", "up", self.hotspot_name], check=True)
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to start Hotspot: {e}")
+            cmd = [
+                "sudo", "nmcli", "dev", "wifi", "connect", 
+                ssid, "password", password
+            ]
+            # Running with a timeout so we don't hang forever
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0:
+                logger.info("✅ WiFi Connected successfully!")
+                return True
+            else:
+                raise Exception("WiFi auth failed")
+
+        except (subprocess.TimeoutExpired, Exception) as e:
+            logger.warning(f"❌ Connection failed. Falling back to Hotspot: {e}")
+            self.switch_to_hotspot()
             return False
 
-    def switch_to_wifi(self):
-        """Stops Hotspot and connects to Home WiFi"""
-        print(f"🌐 Switching to WiFi: {self.wifi_ssid}...")
-        try:
-            # Down the hotspot
-            subprocess.run(["sudo", "nmcli", "con", "down", self.hotspot_name], check=False)
-            # Up the wifi
-            subprocess.run(["sudo", "nmcli", "con", "up", self.wifi_ssid], check=True)
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to connect to WiFi: {e}")
-            return False
+    def get_current_status(self):
+        """Returns the current SSID or 'Hotspot'"""
+        _, output = self._run_cmd(["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"])
+        for line in output.split('\n'):
+            if line.startswith("yes:"):
+                return line.split(":")[1]
+        return "Unknown"
 
-# Example usage for testing:
-if __name__ == "__main__":
-    net = NetworkManager(wifi_ssid="Your_Home_WiFi", wifi_pass="Your_Password")
-    # net.switch_to_hotspot()
+# --- REQUIRED ONE-TIME SYSTEM SETUP ---
+# Run this function once or run the commands in your terminal to create the AP profile
+def setup_ap_profile(name="HoloScope_AP", password="holoscope123"):
+    """
+    Creates the persistent Hotspot profile in NetworkManager if it doesn't exist.
+    """
+    cmd = [
+        "sudo", "nmcli", "con", "add", "type", "wifi", "ifname", "wlan0", 
+        "mode", "ap", "con-name", name, "ssid", name, "autoconnect", "false"
+    ]
+    subprocess.run(cmd)
+    subprocess.run(["sudo", "nmcli", "con", "modify", name, "802-11-wireless.band", "bg"])
+    subprocess.run(["sudo", "nmcli", "con", "modify", name, "802-11-wireless-security.key-mgmt", "wpa-psk"])
+    subprocess.run(["sudo", "nmcli", "con", "modify", name, "802-11-wireless-security.psk", password])
+    subprocess.run(["sudo", "nmcli", "con", "modify", name, "ipv4.method", "shared"])
+    print(f"AP Profile '{name}' created.")
