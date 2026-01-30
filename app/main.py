@@ -58,12 +58,21 @@ class BurstRequest(BaseModel):
     interval: int
     burst_gap: int
 
-@app.post("/api/burst")
-async def trigger_burst():
-    settings = get_settings()
-    # Mocking the shell command
-    print(f"Executing: rpicam-still --burst -n --project {settings['project_name']}")
-    return {"status": "success", "message": "Burst Started"}
+@app.post("/api/capture/burst")
+async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
+    if cam_manager.is_running:
+        return {"status": "error", "message": "A capture is already in progress."}
+    
+    background_tasks.add_task(
+        cam_manager.run_burst_sequence, 
+        req.project_name, req.burst_count, req.interval, req.burst_gap
+    )
+    return {"status": "success", "message": "Burst sequence started."}
+
+@app.post("/api/capture/stop")
+async def stop_burst():
+    cam_manager.stop_capture()
+    return {"status": "success", "message": "Stop signal sent."}
 
 ''' 
 ==========================================
