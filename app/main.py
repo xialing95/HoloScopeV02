@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
 from network_manager import NetworkManager
-from camera_manager import CameraManager 
+from camera_manager import cam_manager 
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -60,18 +60,18 @@ class BurstRequest(BaseModel):
 
 @app.post("/api/capture/burst")
 async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
-    if CameraManager.is_running:
+    if cam_manager.is_running:
         return {"status": "error", "message": "A capture is already in progress."}
     
     background_tasks.add_task(
-        CameraManager.run_burst_sequence, 
+        cam_manager.run_burst_sequence, 
         req.project_name, req.burst_count, req.interval, req.burst_gap
     )
     return {"status": "success", "message": "Burst sequence started."}
 
 @app.post("/api/capture/stop")
 async def stop_burst():
-    CameraManager.stop_capture()
+    cam_manager.stop_capture()
     return {"status": "success", "message": "Stop signal sent."}
 
 ''' 
