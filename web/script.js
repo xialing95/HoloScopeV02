@@ -241,6 +241,33 @@ document.getElementById('burst-btn').addEventListener('click', async () => {
     });
 });
 
+document.getElementById('stop-btn').addEventListener('click', async () => {
+    // Disable the button immediately to prevent double-clicks
+    const stopBtn = document.getElementById('stop-btn');
+    stopBtn.disabled = true;
+    stopBtn.innerText = "Stopping...";
+
+    try {
+        const response = await fetch(`${API_BASE}/capture/stop`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            notify("Stop signal sent! Finishing current photo...", "neutral");
+        } else {
+            notify("Failed to stop capture", "error");
+        }
+    } catch (err) {
+        notify("Connection error", "error");
+    } finally {
+        // Re-enable after a short delay
+        setTimeout(() => {
+            stopBtn.disabled = false;
+            stopBtn.innerText = "Stop Capture";
+        }, 2000);
+    }
+});
+
 // Start Polling
 setInterval(updateSensors, 2000);   
 setInterval(refreshFiles, 10000);  

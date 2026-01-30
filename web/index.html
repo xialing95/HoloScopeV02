@@ -27,7 +27,11 @@
                 <label>Photos per Burst: <input type="number" id="burst-count" value="5" min="1"></label>
                 <label>Timelapse (Sec): <input type="number" id="time-interval" value="5" min="2"></label>
                 <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10" min="1"></label>
-                <button id="burst-btn" class="btn-green">Start Capture</button>
+                
+                <div class="button-group">
+                    <button id="burst-btn" class="btn-green">Start Capture</button>
+                    <button id="stop-btn" class="btn-red">Stop Capture</button>
+                </div>
             </div>
             
             <div class="card">
@@ -69,7 +73,7 @@
                     <p class="empty-msg">No images captured yet.</p>
                 </div>
             </div>
-            
+
             <div class="card system">
                 <h3>System & Network</h3>
                 <label>SSID: <input type="text" id="wifi-ssid"></label>
