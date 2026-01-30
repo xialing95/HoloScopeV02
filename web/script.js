@@ -168,25 +168,30 @@ async function updateNetwork(mode) {
 }
 
 /* ==========================================
-   6. INITIALIZATION & LOOPS
+   6. BURST INITIALIZATION & LOOPS
    ========================================== */
 document.getElementById('save-settings-btn').addEventListener('click', saveConfig);
 document.getElementById('save-log-btn').addEventListener('click', saveConfig);
 
-document.getElementById('burst-btn').onclick = async () => {
-    notify("Triggering Capture...", "neutral");
-    try {
-        const res = await fetch(`${API_BASE}/burst`, { method: 'POST' });
-        if (res.ok) {
-            notify("Capture Complete", "success");
-            refreshFiles();
-        } else {
-            throw new Error("Camera Busy");
-        }
-    } catch (err) {
-        notify(`Camera Error: ${err.message}`, "error");
-    }
-};
+document.getElementById('burst-btn').addEventListener('click', async () => {
+    const payload = {
+        project_name: document.getElementById('proj-name').value,
+        burst_count: parseInt(document.getElementById('burst-count').value),
+        interval: parseInt(document.getElementById('time-interval').value),
+        burst_gap: parseInt(document.getElementById('burst-gap').value)
+    };
+
+    if (!payload.project_name) return notify("Name required!", "error");
+    if (payload.interval < 2) return notify("Min interval is 2s", "error");
+
+    notify(`Project ${payload.project_name} started...`, "success");
+
+    await fetch(`${API_BASE}/capture/burst`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+});
 
 // Start Polling
 setInterval(updateSensors, 2000);   

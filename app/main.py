@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
 from network_manager import NetworkManager
+from camera_manager import cam_manager 
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -24,21 +25,38 @@ def get_settings():
 
 # --- API ROUTES ---
 
+''' 
+==========================================
+   Sensors Endpoint
+========================================== 
+'''
 @app.get("/api/sensors")
 async def read_sensors():
     # Mock data (On the Pi, we will replace this with real sensor code)
     return {"temp": 22.5, "humidity": 45}
 
-@app.get("/api/files")
-async def list_files():
-    files = sorted(os.listdir(PHOTO_DIR), reverse=True)
-    return [f for f in files if f.endswith(('.jpg', '.png', '.dng', '.csv'))]
 
+''' 
+==========================================
+   Setting Management Endpoint
+========================================== 
+'''
 @app.post("/api/settings")
 async def save_settings(config: dict):
     with open(SETTINGS_FILE, "w") as f:
         json.dump(config, f)
     return {"status": "success"}
+
+''' 
+==========================================
+   Burst Capture Endpoint
+========================================== 
+'''
+class BurstRequest(BaseModel):
+    project_name: str
+    burst_count: int
+    interval: int
+    burst_gap: int
 
 @app.post("/api/burst")
 async def trigger_burst():
@@ -46,6 +64,12 @@ async def trigger_burst():
     # Mocking the shell command
     print(f"Executing: rpicam-still --burst -n --project {settings['project_name']}")
     return {"status": "success", "message": "Burst Started"}
+
+''' 
+==========================================
+   File Management Endpoints
+========================================== 
+'''
 
 @app.delete("/api/files/{filename}")
 async def delete_file(filename: str):
@@ -55,6 +79,17 @@ async def delete_file(filename: str):
         return {"status": "deleted"}
     raise HTTPException(status_code=404, detail="File not found")
 
+@app.get("/api/files")
+async def list_files():
+    files = sorted(os.listdir(PHOTO_DIR), reverse=True)
+    return [f for f in files if f.endswith(('.jpg', '.png', '.dng', '.csv'))]
+
+''' 
+==========================================
+   Network Manager Endpoint
+========================================== 
+'''
+   
 # 1. Define the data structure expected from JS
 class NetworkRequest(BaseModel):
     mode: str
@@ -80,6 +115,12 @@ async def handle_network(request: NetworkRequest, background_tasks: BackgroundTa
     
     return {"status": "Error", "detail": "Invalid mode"}
 
+
+''' 
+==========================================
+   Main
+========================================== 
+'''
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=5000)

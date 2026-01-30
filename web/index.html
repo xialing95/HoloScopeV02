@@ -23,12 +23,13 @@
             
             <div class="card">
                 <h3>Burst Timelapse Setting</h3>
-                <label>Project Name: <input type="text" id="proj-name"></label>
-                <label>Timelapse (Sec): <input type="number" id="time-interval" value="5"></label>
-                <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10"></label>
+                <label>Project Name: <input type="text" id="proj-name" placeholder="MyProject"></label>
+                <label>Photos per Burst: <input type="number" id="burst-count" value="5" min="1"></label>
+                <label>Timelapse (Sec): <input type="number" id="time-interval" value="5" min="2"></label>
+                <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10" min="1"></label>
                 <button id="burst-btn" class="btn-green">Start Capture</button>
             </div>
-
+            
             <div class="card">
                 <h3>Camera Manual Overrides</h3>
                 <label>Shutter Speed (ms): <input type="number" id="shutter" value="0"></label>
@@ -51,7 +52,7 @@
             </div>
 
             <div class="card">
-                <h3>Logging Config</h3>
+                <h3>Environmental Logging Config</h3>
                 <label>Log Interval (Sec): <input type="number" id="log-interval" value="60"></label>
                 <label class="checkbox-label">
                     <input type="checkbox" id="log-enabled"> Enable Data Logging (.csv)
