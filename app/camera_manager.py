@@ -55,3 +55,5 @@ class CameraManager:
                     time.sleep(1)
         finally:
             self.is_running = False
+
+cam_manager = CameraManager()
