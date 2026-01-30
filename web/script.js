@@ -47,6 +47,54 @@ async function updateSensors() {
 /* ==========================================
    3. FILE MANAGEMENT (GALLERY)
    ========================================== */
+const refreshBtn = document.getElementById('refresh-btn');
+const fileList = document.getElementById('file-list');
+
+async function updateGallery() {
+    refreshBtn.disabled = true;
+    refreshBtn.innerText = "Loading...";
+
+    try {
+        const response = await fetch(`${API_BASE}/files`);
+        const files = await response.json();
+
+        // Clear current list
+        fileList.innerHTML = '';
+
+        if (files.length === 0) {
+            fileList.innerHTML = '<p class="empty-msg">No images captured yet.</p>';
+        } else {
+            files.forEach(fileName => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                // Extract just the name if it's a long path
+                const shortName = fileName.split('/').pop();
+                
+                fileItem.innerHTML = `
+                    <span class="file-name" title="${fileName}">${shortName}</span>
+                    <div class="file-actions">
+                        <a href="${API_BASE}/download/${fileName}" class="btn-small">Download</a>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+    } catch (err) {
+        notify("Failed to load gallery", "error");
+        console.error(err);
+    } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.innerText = "🔄 Refresh Gallery";
+    }
+}
+
+// Attach event listener
+refreshBtn.addEventListener('click', updateGallery);
+
+// Run once on page load
+updateGallery();
+
 async function refreshFiles() {
     try {
         const res = await fetch(`${API_BASE}/files`);

@@ -177,6 +177,33 @@ button:active { transform: scale(0.97); }
     border: 1px solid #d2d2d7;
 }
 
+.file-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+.file-item:last-child { border-bottom: none; }
+
+.file-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+
 /* ==========================================
    7. DESKTOP ADAPTATION (900px+)
    ========================================== */
