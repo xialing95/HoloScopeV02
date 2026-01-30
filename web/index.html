@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HoloScope V0.2</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="grid-container">
+        <div id="system-status-bar" class="status-neutral">
+            <span id="status-label">System:</span>
+            <span id="status-message">HoloScope Ready</span>
+        </div>
+
+        <section class="viewport">
+            <h2>Live Preview</h2>
+            <img id="stream" src="/stream/" alt="Camera Stream">
+        </section>
+
+        <section class="controls">
+            <h2>Settings</h2>
+            
+            <div class="card">
+                <h3>Burst Timelapse Setting</h3>
+                <label>Project Name: <input type="text" id="proj-name"></label>
+                <label>Timelapse (Sec): <input type="number" id="time-interval" value="5"></label>
+                <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10"></label>
+                <button id="burst-btn" class="btn-green">Start Capture</button>
+            </div>
+
+            <div class="card">
+                <h3>Camera Manual Overrides</h3>
+                <label>Shutter Speed (ms): <input type="number" id="shutter" value="0"></label>
+                <label>ISO: <input type="number" id="iso" value="100"></label>
+                <button id="save-settings-btn">Apply Camera Settings</button>
+            </div>
+
+            <div class="card">
+                <h3>Live Sensors</h3>
+                <div class="sensor-grid">
+                    <div class="sensor-item">
+                        <span class="label">Temp</span>
+                        <span id="temp-val" class="value">--°C</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="label">Humidity</span>
+                        <span id="hum-val" class="value">--%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Logging Config</h3>
+                <label>Log Interval (Sec): <input type="number" id="log-interval" value="60"></label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="log-enabled"> Enable Data Logging (.csv)
+                </label>
+                <button id="save-log-btn" class="btn-blue">Update Logging</button>
+            </div>
+
+            <div class="card">
+                <h3>Gallery & Storage</h3>
+                <div id="file-list" class="file-container">
+                    <p class="empty-msg">No images captured yet.</p>
+                </div>
+            </div>
+
+            <div class="card system">
+                <h3>System & Network</h3>
+                <label>SSID: <input type="text" id="wifi-ssid"></label>
+                <label>Password: <input type="password" id="wifi-pass"></label>
+                <button onclick="updateNetwork('wifi')">Connect WiFi</button>
+                <button onclick="updateNetwork('hotspot')" class="btn-warn">Enable Hotspot</button>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
