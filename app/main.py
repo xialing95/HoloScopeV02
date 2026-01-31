@@ -35,29 +35,41 @@ from fastapi.responses import FileResponse
 '''
 @app.get("/api/preview")
 async def get_preview():
+    # 1. Check if we should even be running
+    if cam_manager._stop_event.is_set():
+        return {"error": "Preview stopped"}
+
     if cam_manager.is_running:
-        # Optional: Return the last photo taken by the burst instead!
         return {"error": "Camera busy with Timelapse"}
     
     preview_path = "/tmp/preview.jpg"
     
-    # Take a fast, low-res photo
-    # --width/height 640/480 makes it fast to process
+    # 2. Build command using your saved tuning (Shutter, ISO, AWB)
+    # We use lower resolution for speed, but keep the exposure settings
     cmd = [
         "rpicam-still",
         "-o", preview_path,
-        "--width", "640",
-        "--height", "480",
+        "--width", "1024", 
+        "--height", "768",
+        "--shutter", str(cam_manager.settings["shutter"]),
+        "--gain", str(cam_manager.settings["iso"] / 100),
         "--nopreview",
         "--timeout", "1",
         "--immediate"
     ]
+
+    # Add AWB or Manual Gains
+    if cam_manager.settings["awb_enabled"]:
+        cmd.extend(["--awb", "auto"])
+    else:
+        gains = f"{cam_manager.settings['red_gain']},{cam_manager.settings['blue_gain']}"
+        cmd.extend(["--awbgains", gains])
     
     try:
         subprocess.run(cmd, check=True)
         return FileResponse(preview_path)
-    except:
-        return {"error": "Camera busy"}
+    except subprocess.CalledProcessError:
+        return {"error": "Camera capture failed"}
 
 ''' 
 ==========================================

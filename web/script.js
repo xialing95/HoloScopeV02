@@ -287,17 +287,29 @@ document.getElementById('stop-btn').addEventListener('click', async () => {
 let previewInterval = null;
 
 function startPreview() {
-    const previewImg = document.getElementById('live-preview');
+    if (previewInterval) return; // Already running
     
-    previewInterval = setInterval(() => {
-        // Adding ?t= ensures the browser fetches a NEW image every time
-        previewImg.src = `${API_BASE}/preview?t=${new Date().getTime()}`;
-    }, 2000); // 2000ms = 2 seconds
+    previewInterval = setInterval(async () => {
+        const img = document.getElementById('preview-frame');
+        // Adding a timestamp prevents the browser from showing a cached image
+        img.src = `${API_BASE}/preview?t=${new Date().getTime()}`;
+    }, 3000); // 3 seconds is safer for the Pi Zero 2 W
 }
 
-function stopPreview() {
-    clearInterval(previewInterval);
+async function stopEverything() {
+    // 1. Tell the Server to stop
+    await fetch(`${API_BASE}/capture/stop`, { method: 'POST' });
+    
+    // 2. Clear the local JS interval
+    if (previewInterval) {
+        clearInterval(previewInterval);
+        previewInterval = null;
+    }
+    
+    notify("Preview Stopped", "neutral");
 }
+
+document.getElementById('stop-btn').addEventListener('click', stopEverything);
 
 // Start Polling
 setInterval(updateSensors, 2000);   
