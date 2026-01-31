@@ -13,14 +13,14 @@
             <span id="status-message">HoloScope Ready</span>
         </div>
 
-        <!-- <div class="card">
+        <div class="card">
             <h3>Live Monitoring (2s Refresh)</h3>
             <div class="preview-box" style="text-align:center; background:#000; min-height:200px;">
                 <img id="live-preview" src="" alt="Click Start Preview" style="max-width:100%; height:auto;">
             </div>
             <div class="button-group" style="margin-top:10px;">
-                <button onclick="startPreview()" class="btn-blue">Start Preview</button>
-                <button onclick="stopPreview()" class="btn-red">Stop Preview</button>
+                <button id="start-preview-btn" class="btn-blue">Start Preview</button>
+                <button id="stop-preview-btn" class="btn-red">Stop Preview</button>
             </div>
         </div>
 
@@ -64,48 +64,6 @@
             </div>
             
             <button id="save-settings-btn" class="btn-blue">Apply Camera Settings</button>
-        </div> -->
-
-        <div class="card">
-            <h3>HoloScope Control</h3>
-            
-            <div class="mode-selector" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button id="start-preview-btn" class="btn-blue" style="flex: 1;">Start Preview</button>
-                <button id="stop-btn" class="btn-red" style="flex: 1;">Emergency Stop</button>
-            </div>
-
-            <hr>
-
-            <div class="settings-group">
-                <h4>Camera Tuning</h4>
-                <label>Shutter (µs): <input type="number" id="shutter" value="2000"></label>
-                <label>ISO: <input type="number" id="iso" value="100"></label>
-                
-                <label>
-                    <input type="checkbox" id="awb-toggle" checked> Auto White Balance
-                </label>
-                
-                <div id="manual-wb-controls" style="display:none; padding-left: 15px; border-left: 2px solid #ccc;">
-                    <label>Red Gain: <input type="number" id="red-gain" value="1.5" step="0.1"></label>
-                    <label>Blue Gain: <input type="number" id="blue-gain" value="1.5" step="0.1"></label>
-                </div>
-                
-                <button id="save-settings-btn" class="btn-small">Apply Tuning</button>
-            </div>
-
-            <hr>
-
-            <div class="settings-group">
-                <h4>Experiment (Burst Mode)</h4>
-                <label>Project: <input type="text" id="proj-name" value="Exp_01"></label>
-                <label>Burst Count: <input type="number" id="burst-count" value="5"></label>
-                <button id="start-burst-btn" class="btn-green">🚀 Start Burst Sequence</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <img id="preview-frame" src="" style="width: 100%; border-radius: 8px; background: #000;" alt="Camera Feed">
-            <p id="status-text" style="text-align: center; color: #666;">Status: Idle</p>
         </div>
 
             <div class="card">
@@ -132,7 +90,7 @@
             </div>
 
             <div class="card">
-                <h3>Gallery & Storage</h3>
+                <h3>Files & Storage</h3>
                 <div class="gallery-controls">
                     <button id="refresh-btn" class="btn-blue">Refresh Data Folder</button>
                 </div>
@@ -141,13 +99,14 @@
                 </div>
             </div>
 
-            <div class="card system">
-                <h3>System & Network</h3>
-                <label>SSID: <input type="text" id="wifi-ssid"></label>
-                <label>Password: <input type="password" id="wifi-pass"></label>
-                <button onclick="updateNetwork('wifi')">Connect WiFi</button>
-                <button onclick="updateNetwork('hotspot')" class="btn-warn">Enable Hotspot</button>
-            </div>
+        <div class="card system">
+            <h3>System & Network</h3>
+            <label>SSID: <input type="text" id="wifi-ssid"></label>
+            <label>Password: <input type="password" id="wifi-pass"></label>
+            <button id="wifi-btn">Connect WiFi</button>
+            <button id="hotspot-btn" class="btn-warn">Enable Hotspot</button>
+        </div>
+
         </section>
     </div>
     <script src="script.js"></script>

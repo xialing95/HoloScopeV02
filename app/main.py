@@ -29,45 +29,7 @@ def get_settings():
 
 import subprocess
 from fastapi.responses import FileResponse
-
-''' 
-==========================================
-   Mode Management Endpoint
-========================================== 
 '''
-
-@app.post("/api/mode/preview")
-async def mode_preview():
-    # 1. Kill any existing tasks
-    cam_manager.stop_capture() 
-    # 2. Reset the lock
-    cam_manager._stop_event.clear()
-    return {"status": "Preview enabled"}
-
-@app.post("/api/mode/burst")
-async def mode_burst(req: BurstRequest, background_tasks: BackgroundTasks):
-    # 1. Stop any current activity (Preview or previous Burst)
-    cam_manager.stop_capture()
-    
-    # 2. Wait a fraction of a second for the hardware to release
-    time.sleep(0.2)
-    
-    # 3. Clear the stop flag so the new sequence can run
-    cam_manager._stop_event.clear()
-    
-    # 4. Launch the burst sequence in the background
-    # This prevents the web UI from 'freezing' while the camera works
-    background_tasks.add_task(
-        cam_manager.run_burst_sequence, 
-        req.project_name, 
-        req.burst_count, 
-        req.interval, 
-        req.burst_gap
-    )
-    
-    print(f"🚀 Burst started: {req.project_name} ({req.burst_count} frames)")
-    return {"status": "success", "message": f"Burst sequence '{req.project_name}' initiated."}
-''' 
 ==========================================
    Preview Endpoint
 ========================================== 
@@ -222,7 +184,6 @@ async def download_file(file_path: str):
    Network Manager Endpoint
 ========================================== 
 '''
-   
 # 1. Define the data structure expected from JS
 class NetworkRequest(BaseModel):
     mode: str
