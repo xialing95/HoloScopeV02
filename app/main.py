@@ -88,7 +88,6 @@ async def read_sensors():
     # Mock data (On the Pi, we will replace this with real sensor code)
     return {"temp": 22.5, "humidity": 45}
 
-
 ''' 
 ==========================================
    Camera Setting Management Endpoint

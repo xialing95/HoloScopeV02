@@ -117,7 +117,7 @@ async function refreshFiles() {
                 <span>${file}</span>
                 <div class="file-actions">
                     <a href="${API_BASE}/download/${file}" class="btn-blue" style="padding:5px 10px; text-decoration:none; margin-right:5px;">↓</a>
-                    <button class="btn-warn" onclick="deleteFile('${file}')" style="width:auto; padding:5px 10px;">×</button>
+                    <button class="btn-warn" onclick="deleteFile('${file}')" style="width:auto; padding:5px 10px;">x</button>
                 </div>
             `;
             container.appendChild(row);
@@ -144,7 +144,7 @@ async function deleteFile(filename) {
 }
 
 /* ==========================================
-   4. CAMER SETTINGS & LOGGING
+   4. CAMERA SETTINGS & LOGGING
    ========================================== */
 document.getElementById('save-settings-btn').addEventListener('click', applyCameraTuning);
 
@@ -211,29 +211,6 @@ async function updateNetwork(mode) {
 /* ==========================================
    6. BURST INITIALIZATION & LOOPS
    ========================================== */
-document.getElementById('save-project-btn').addEventListener('click', saveProjectConfig);
-
-async function saveProjectConfig() {
-    const payload = {
-        project_name: document.getElementById('proj-name').value,
-        interval_sec: parseInt(document.getElementById('time-interval').value),
-        log_enabled: document.getElementById('log-enabled').checked
-    };
-
-    try {
-        const response = await fetch(`${API_BASE}/settings/project`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (response.ok) {
-            notify("Project Configuration Saved", "success");
-        }
-    } catch (err) {
-        notify("Project Save Failed", "error");
-    }
-}
-
 document.getElementById('burst-btn').addEventListener('click', async () => {
     const payload = {
         project_name: document.getElementById('proj-name').value,
