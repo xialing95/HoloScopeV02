@@ -146,35 +146,28 @@ async function deleteFile(filename) {
 /* ==========================================
    4. SETTINGS & LOGGING
    ========================================== */
-async function saveConfig() {
-    notify("Saving configuration...", "neutral");
-    
+document.getElementById('save-settings-btn').addEventListener('click', applyCameraTuning);
+
+async function applyCameraTuning() {
     const payload = {
-        project_name: document.getElementById('proj-name').value,
-        timelapse_interval_sec: parseInt(document.getElementById('time-interval').value),
-        log_interval: parseInt(document.getElementById('log-interval').value),
-        log_enabled: document.getElementById('log-enabled').checked,
-        shutter_speed: parseInt(document.getElementById('shutter').value),
-        iso: parseInt(document.getElementById('iso').value)
+        shutter: parseInt(document.getElementById('shutter').value),
+        iso: parseInt(document.getElementById('iso').value),
+        awb_enabled: document.getElementById('awb-toggle').checked,
+        red_gain: parseFloat(document.getElementById('red-gain').value),
+        blue_gain: parseFloat(document.getElementById('blue-gain').value)
     };
 
     try {
-        const response = await fetch(`${API_BASE}/settings`, {
+        const response = await fetch(`${API_BASE}/camera/settings`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
-        if (response.ok) {
-            notify("Configuration Saved!", "success");
-        } else {
-            throw new Error("Server rejected settings");
-        }
+        if (response.ok) notify("Camera Tuned!", "success");
     } catch (err) {
-        notify(`Save Failed: ${err.message}`, "error");
+        notify("Tuning Failed", "error");
     }
 }
-
 /* ==========================================
    5. SYSTEM & NETWORK MANAGEMENT
    ========================================== */
@@ -218,8 +211,28 @@ async function updateNetwork(mode) {
 /* ==========================================
    6. BURST INITIALIZATION & LOOPS
    ========================================== */
-document.getElementById('save-settings-btn').addEventListener('click', saveConfig);
-document.getElementById('save-log-btn').addEventListener('click', saveConfig);
+document.getElementById('save-project-btn').addEventListener('click', saveProjectConfig);
+
+async function saveProjectConfig() {
+    const payload = {
+        project_name: document.getElementById('proj-name').value,
+        interval_sec: parseInt(document.getElementById('time-interval').value),
+        log_enabled: document.getElementById('log-enabled').checked
+    };
+
+    try {
+        const response = await fetch(`${API_BASE}/settings/project`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+            notify("Project Configuration Saved", "success");
+        }
+    } catch (err) {
+        notify("Project Save Failed", "error");
+    }
+}
 
 document.getElementById('burst-btn').addEventListener('click', async () => {
     const payload = {

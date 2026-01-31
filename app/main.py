@@ -72,14 +72,32 @@ async def read_sensors():
 
 ''' 
 ==========================================
-   Setting Management Endpoint
+   Camera Setting Management Endpoint
 ========================================== 
 '''
+class CameraSettings(BaseModel):
+    shutter: int
+    iso: int
+    awb_enabled: bool
+    red_gain: float
+    blue_gain: float
+
 @app.post("/api/settings")
 async def save_settings(config: dict):
     with open(SETTINGS_FILE, "w") as f:
         json.dump(config, f)
     return {"status": "success"}
+
+@app.post("/api/camera/settings")
+async def update_camera_settings(settings: CameraSettings):
+    try:
+        # We pass the dictionary version of the model to our manager
+        cam_manager.update_settings(settings.dict())
+        
+        print(f"📸 Camera Updated: Shutter={settings.shutter}, ISO={settings.iso}")
+        return {"status": "success", "message": "Camera settings updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 ''' 
 ==========================================

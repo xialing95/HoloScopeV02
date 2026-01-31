@@ -10,11 +10,13 @@ echo "🚀 Starting HoloScope Installation..."
 echo "📦 Installing System Dependencies..."
 sudo apt install -y python3-pip python3-venv nginx libcamera-dev gpiod
 
-# 3. Create and Activate Virtual Environment
-echo "📦 Setting up Python Virtual Environment..."
-# Ensure we are in the correct directory
-cd ~/HoloScopeV02
-python3 -m venv venv --system-site-packages
+# 3. Check if the folder 'venv' DOES NOT exist
+if [ ! -d "venv" ]; then
+    echo "Creating new virtual environment..."
+    python3 -m venv venv --system-site-packages
+else
+    echo "Virtual environment already exists. Skipping creation."
+fi
 
 source venv/bin/activate
 
@@ -52,23 +54,17 @@ server {
     root /home/pi/HoloScopeV02/web;
     index index.html;
 
-    # Allow larger file transfers (important for RAW/DNG files)
     client_max_body_size 100M;
 
     location / {
-        try_files $uri $uri/ =404;
+        try_files \$uri \$uri/ =404;
     }
 
-    # All FastAPI logic (including /api/preview and /api/files)
     location /api/ {
         proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        
-        # Disable buffering so the 2-second images send immediately
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
         proxy_buffering off;
-        
-        # Ensure the browser doesn't cache the preview images
         add_header Cache-Control "no-cache, no-store, must-revalidate";
     }
 }

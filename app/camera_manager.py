@@ -8,6 +8,18 @@ class CameraManager:
     def __init__(self):
         self._stop_event = threading.Event()
         self.is_running = False
+        # Default settings that get overwritten by the Web UI
+        self.settings = {
+            "shutter": 500,
+            "iso": 100,
+            "awb_enabled": True,
+            "red_gain": 1.5,
+            "blue_gain": 1.5
+        }
+
+    def update_settings(self, new_settings: dict):
+        """Update the internal settings dictionary with new values from the UI."""
+        self.settings.update(new_settings)
 
     def stop_capture(self):
         self._stop_event.set()
@@ -16,7 +28,6 @@ class CameraManager:
         self._stop_event.clear()
         self.is_running = True
         
-        # Save everything directly to the project folder
         base_path = f"/home/pi/HoloScopeV02/data/"
         os.makedirs(base_path, exist_ok=True)
         
@@ -26,20 +37,27 @@ class CameraManager:
                     if self._stop_event.is_set():
                         break
                     
-                    # LONG UNIQUE FILENAME: project_date_time_index.jpg
-                    # This ensures files are unique and sortable by name
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f"{base_path}/{project_name}_{timestamp}_{i:03d}.dng"
 
+                    # DYNAMIC COMMAND BUILDING
                     cmd = [
                         "rpicam-still",
-                        "--shutter", "500",
+                        "--shutter", str(self.settings["shutter"]),
+                        "--gain", str(self.settings["iso"] / 100), # Convert ISO to analog gain
                         "--timeout", "1",
                         "--immediate",
                         "--raw",
                         "--nopreview",
                         "-o", filename
                     ]
+
+                    # Inject AWB or Manual Gains
+                    if self.settings["awb_enabled"]:
+                        cmd.extend(["--awb", "auto"])
+                    else:
+                        gains = f"{self.settings['red_gain']},{self.settings['blue_gain']}"
+                        cmd.extend(["--awbgains", gains])
 
                     subprocess.run(cmd, check=True)
                     
