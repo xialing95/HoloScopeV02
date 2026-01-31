@@ -1,11 +1,13 @@
 import os
 import json
+import time
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
 from network_manager import NetworkManager
 from camera_manager import cam_manager 
 from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -44,14 +46,27 @@ async def mode_preview():
 
 @app.post("/api/mode/burst")
 async def mode_burst(req: BurstRequest, background_tasks: BackgroundTasks):
-    # 1. Kill the preview loop (stops rpicam-still calls)
+    # 1. Stop any current activity (Preview or previous Burst)
     cam_manager.stop_capture()
-    # 2. Allow new process
+    
+    # 2. Wait a fraction of a second for the hardware to release
+    time.sleep(0.2)
+    
+    # 3. Clear the stop flag so the new sequence can run
     cam_manager._stop_event.clear()
-    # 3. Start high-res sequence
-    background_tasks.add_task(cam_manager.run_burst_sequence, req)
-    return {"status": "Burst enabled"}
-
+    
+    # 4. Launch the burst sequence in the background
+    # This prevents the web UI from 'freezing' while the camera works
+    background_tasks.add_task(
+        cam_manager.run_burst_sequence, 
+        req.project_name, 
+        req.burst_count, 
+        req.interval, 
+        req.burst_gap
+    )
+    
+    print(f"🚀 Burst started: {req.project_name} ({req.burst_count} frames)")
+    return {"status": "success", "message": f"Burst sequence '{req.project_name}' initiated."}
 ''' 
 ==========================================
    Preview Endpoint
