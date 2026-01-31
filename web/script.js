@@ -295,6 +295,33 @@ async function stopPreview() {
 
 document.getElementById('stop-btn').addEventListener('click', stopEverything);
 
+/* ==========================================
+   8. PREVIEW MANAGEMENT
+   ========================================== */
+const HoloScope = {
+    previewTimer: null,
+
+    async setMode(mode) {
+        // Stop the JS timer immediately
+        if (this.previewTimer) {
+            clearInterval(this.previewTimer);
+            this.previewTimer = null;
+        }
+
+        if (mode === 'preview') {
+            await fetch('/api/mode/preview', { method: 'POST' });
+            this.startPreviewLoop();
+        } else {
+            await fetch('/api/capture/stop', { method: 'POST' });
+        }
+    },
+
+    startPreviewLoop() {
+        this.previewTimer = setInterval(() => {
+            document.getElementById('preview-frame').src = `/api/preview?t=${Date.now()}`;
+        }, 3000);
+    }
+};
 
 // Start Polling
 setInterval(updateSensors, 2000);   

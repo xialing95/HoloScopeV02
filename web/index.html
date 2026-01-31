@@ -13,7 +13,7 @@
             <span id="status-message">HoloScope Ready</span>
         </div>
 
-        <div class="card">
+        <!-- <div class="card">
             <h3>Live Monitoring (2s Refresh)</h3>
             <div class="preview-box" style="text-align:center; background:#000; min-height:200px;">
                 <img id="live-preview" src="" alt="Click Start Preview" style="max-width:100%; height:auto;">
@@ -64,6 +64,48 @@
             </div>
             
             <button id="save-settings-btn" class="btn-blue">Apply Camera Settings</button>
+        </div> -->
+
+        <div class="card">
+            <h3>HoloScope Control</h3>
+            
+            <div class="mode-selector" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="start-preview-btn" class="btn-blue" style="flex: 1;">Start Preview</button>
+                <button id="stop-btn" class="btn-red" style="flex: 1;">Emergency Stop</button>
+            </div>
+
+            <hr>
+
+            <div class="settings-group">
+                <h4>Camera Tuning</h4>
+                <label>Shutter (µs): <input type="number" id="shutter" value="2000"></label>
+                <label>ISO: <input type="number" id="iso" value="100"></label>
+                
+                <label>
+                    <input type="checkbox" id="awb-toggle" checked> Auto White Balance
+                </label>
+                
+                <div id="manual-wb-controls" style="display:none; padding-left: 15px; border-left: 2px solid #ccc;">
+                    <label>Red Gain: <input type="number" id="red-gain" value="1.5" step="0.1"></label>
+                    <label>Blue Gain: <input type="number" id="blue-gain" value="1.5" step="0.1"></label>
+                </div>
+                
+                <button id="save-settings-btn" class="btn-small">Apply Tuning</button>
+            </div>
+
+            <hr>
+
+            <div class="settings-group">
+                <h4>Experiment (Burst Mode)</h4>
+                <label>Project: <input type="text" id="proj-name" value="Exp_01"></label>
+                <label>Burst Count: <input type="number" id="burst-count" value="5"></label>
+                <button id="start-burst-btn" class="btn-green">🚀 Start Burst Sequence</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <img id="preview-frame" src="" style="width: 100%; border-radius: 8px; background: #000;" alt="Camera Feed">
+            <p id="status-text" style="text-align: center; color: #666;">Status: Idle</p>
         </div>
 
             <div class="card">

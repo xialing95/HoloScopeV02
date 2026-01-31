@@ -30,6 +30,30 @@ from fastapi.responses import FileResponse
 
 ''' 
 ==========================================
+   Mode Management Endpoint
+========================================== 
+'''
+
+@app.post("/api/mode/preview")
+async def mode_preview():
+    # 1. Kill any existing tasks
+    cam_manager.stop_capture() 
+    # 2. Reset the lock
+    cam_manager._stop_event.clear()
+    return {"status": "Preview enabled"}
+
+@app.post("/api/mode/burst")
+async def mode_burst(req: BurstRequest, background_tasks: BackgroundTasks):
+    # 1. Kill the preview loop (stops rpicam-still calls)
+    cam_manager.stop_capture()
+    # 2. Allow new process
+    cam_manager._stop_event.clear()
+    # 3. Start high-res sequence
+    background_tasks.add_task(cam_manager.run_burst_sequence, req)
+    return {"status": "Burst enabled"}
+
+''' 
+==========================================
    Preview Endpoint
 ========================================== 
 '''
