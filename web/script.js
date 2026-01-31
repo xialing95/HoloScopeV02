@@ -144,7 +144,7 @@ async function deleteFile(filename) {
 }
 
 /* ==========================================
-   4. SETTINGS & LOGGING
+   4. CAMER SETTINGS & LOGGING
    ========================================== */
 document.getElementById('save-settings-btn').addEventListener('click', applyCameraTuning);
 
