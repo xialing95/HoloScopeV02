@@ -133,7 +133,11 @@ async def download_file(file_path: str):
     full_path = os.path.join(PHOTO_DIR, file_path)
     
     if os.path.exists(full_path):
-        return FileResponse(full_path)
+        return FileResponse(
+            full_path, 
+            media_type='application/octet-stream', 
+            filename=os.path.basename(full_path)
+        )
     
     # If it fails, let's see why in the logs
     print(f"File not found: {full_path}")
