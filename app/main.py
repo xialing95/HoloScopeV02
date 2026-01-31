@@ -127,6 +127,18 @@ async def list_files():
     files = sorted(os.listdir(PHOTO_DIR), reverse=True)
     return [f for f in files if f.endswith(('.jpg', '.png', '.dng', '.csv'))]
 
+@app.get("/api/download/{file_path:path}")
+async def download_file(file_path: str):
+    # This joins /home/pi/HoloScopeV02/data + ProjectName/image.jpg
+    full_path = os.path.join(PHOTO_DIR, file_path)
+    
+    if os.path.exists(full_path):
+        return FileResponse(full_path)
+    
+    # If it fails, let's see why in the logs
+    print(f"File not found: {full_path}")
+    return {"error": f"File not found at {full_path}"}
+
 ''' 
 ==========================================
    Network Manager Endpoint
