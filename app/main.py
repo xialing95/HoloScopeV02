@@ -70,6 +70,13 @@ async def get_preview():
         return FileResponse(preview_path)
     except subprocess.CalledProcessError:
         return {"error": "Camera capture failed"}
+    
+@app.post("/api/preview/start")
+async def start_preview_mode():
+    # This is the magic line that allows the camera to work again
+    cam_manager._stop_event.clear()
+    print("🚀 Preview Mode re-enabled")
+    return {"status": "ready"}
 
 ''' 
 ==========================================

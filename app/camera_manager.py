@@ -23,6 +23,8 @@ class CameraManager:
 
     def stop_capture(self):
         self._stop_event.set()
+        # Force kill any hanging camera processes to free the hardware
+        os.system("pkill -9 rpicam-still")
 
     def run_burst_sequence(self, project_name, burst_count, interval, burst_gap):
         self._stop_event.clear()
