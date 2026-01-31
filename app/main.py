@@ -25,6 +25,40 @@ def get_settings():
 
 # --- API ROUTES ---
 
+import subprocess
+from fastapi.responses import FileResponse
+
+''' 
+==========================================
+   Preview Endpoint
+========================================== 
+'''
+@app.get("/api/preview")
+async def get_preview():
+    if cam_manager.is_running:
+        # Optional: Return the last photo taken by the burst instead!
+        return {"error": "Camera busy with Timelapse"}
+    
+    preview_path = "/tmp/preview.jpg"
+    
+    # Take a fast, low-res photo
+    # --width/height 640/480 makes it fast to process
+    cmd = [
+        "rpicam-still",
+        "-o", preview_path,
+        "--width", "640",
+        "--height", "480",
+        "--nopreview",
+        "--timeout", "1",
+        "--immediate"
+    ]
+    
+    try:
+        subprocess.run(cmd, check=True)
+        return FileResponse(preview_path)
+    except:
+        return {"error": "Camera busy"}
+
 ''' 
 ==========================================
    Sensors Endpoint

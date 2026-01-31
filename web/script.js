@@ -268,6 +268,24 @@ document.getElementById('stop-btn').addEventListener('click', async () => {
     }
 });
 
+/* ==========================================
+   7. PREVIEW MANAGEMENT
+   ========================================== */
+let previewInterval = null;
+
+function startPreview() {
+    const previewImg = document.getElementById('live-preview');
+    
+    previewInterval = setInterval(() => {
+        // Adding ?t= ensures the browser fetches a NEW image every time
+        previewImg.src = `${API_BASE}/preview?t=${new Date().getTime()}`;
+    }, 2000); // 2000ms = 2 seconds
+}
+
+function stopPreview() {
+    clearInterval(previewInterval);
+}
+
 // Start Polling
 setInterval(updateSensors, 2000);   
 setInterval(refreshFiles, 10000);  

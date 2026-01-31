@@ -13,10 +13,16 @@
             <span id="status-message">HoloScope Ready</span>
         </div>
 
-        <section class="viewport">
-            <h2>Live Preview</h2>
-            <img id="stream" src="/stream/" alt="Camera Stream">
-        </section>
+        <div class="card">
+            <h3>Live Monitoring (2s Refresh)</h3>
+            <div class="preview-box" style="text-align:center; background:#000; min-height:200px;">
+                <img id="live-preview" src="" alt="Click Start Preview" style="max-width:100%; height:auto;">
+            </div>
+            <div class="button-group" style="margin-top:10px;">
+                <button onclick="startPreview()" class="btn-blue">Start Preview</button>
+                <button onclick="stopPreview()" class="btn-red">Stop Preview</button>
+            </div>
+        </div>
 
         <section class="controls">
             <h2>Settings</h2>
@@ -67,7 +73,7 @@
             <div class="card">
                 <h3>Gallery & Storage</h3>
                 <div class="gallery-controls">
-                    <button id="refresh-btn" class="btn-blue">🔄 Refresh Gallery</button>
+                    <button id="refresh-btn" class="btn-blue">Refresh Data Folder</button>
                 </div>
                 <div id="file-list" class="file-container">
                     <p class="empty-msg">No images captured yet.</p>
