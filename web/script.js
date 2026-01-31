@@ -280,7 +280,7 @@ async function startPreview() {
     }
 }
 
-async function stopEverything() {
+async function stopPreview() {
     // 1. Tell the Server to stop
     await fetch(`${API_BASE}/capture/stop`, { method: 'POST' });
     
