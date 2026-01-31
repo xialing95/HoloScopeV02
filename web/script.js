@@ -32,36 +32,6 @@ const listen = (id, func) => {
     if (el) el.addEventListener('click', func);
 };
 
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Preview Controls
-    listen('start-preview-btn', handleStartPreview);
-    listen('stop-preview-btn', handleStopEverything);
-    
-    // 2. Burst Controls
-    listen('burst-btn', handleBurstStart);
-    listen('stop-btn', handleStopEverything); // Both stop buttons do the same
-    
-    // 3. Camera Tuning
-    listen('save-settings-btn', applyCameraTuning);
-    
-    // 4. AWB Toggle Logic
-    const awbToggle = document.getElementById('awb-toggle');
-    if (awbToggle) {
-        awbToggle.addEventListener('change', (e) => {
-            document.getElementById('manual-wb-controls').style.display = e.target.checked ? 'none' : 'block';
-        });
-    }
-
-    // 5. Files Management
-    listen('refresh-btn', refreshFiles);
-
-    // 6. Network
-    listen('wifi-btn', () => handleNetworkUpdate('wifi'));
-    listen('hotspot-btn', () => handleNetworkUpdate('hotspot'));
-});
-
 /* ==========================================
    2. ENVIRONMENTAL SENSORS
    ========================================== */
@@ -120,7 +90,7 @@ async function refreshFiles() {
         console.error(err);
     } finally {
         refreshBtn.disabled = false;
-        refreshBtn.innerText = "🔄 Refresh Gallery";
+        refreshBtn.innerText = "Refresh Gallery";
     }
 }
 
@@ -293,6 +263,36 @@ async function handleNetworkUpdate(mode) {
     
 //     notify("Preview Stopped", "neutral");
 // }
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Preview Controls
+    listen('start-preview-btn', handleStartPreview);
+    listen('stop-preview-btn', handleStopEverything);
+    
+    // 2. Burst Controls
+    listen('burst-btn', handleBurstStart);
+    listen('stop-btn', handleStopEverything); // Both stop buttons do the same
+    
+    // 3. Camera Tuning
+    listen('save-settings-btn', applyCameraTuning);
+    
+    // 4. AWB Toggle Logic
+    const awbToggle = document.getElementById('awb-toggle');
+    if (awbToggle) {
+        awbToggle.addEventListener('change', (e) => {
+            document.getElementById('manual-wb-controls').style.display = e.target.checked ? 'none' : 'block';
+        });
+    }
+
+    // 5. Files Management
+    listen('refresh-btn', refreshFiles);
+
+    // 6. Network
+    listen('wifi-btn', () => handleNetworkUpdate('wifi'));
+    listen('hotspot-btn', () => handleNetworkUpdate('hotspot'));
+});
 
 // Start Polling
 setInterval(updateSensors, 2000);   
