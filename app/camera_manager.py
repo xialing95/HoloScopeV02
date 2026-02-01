@@ -8,6 +8,8 @@ class CameraManager:
     def __init__(self):
         self.is_previewing = False
         self.is_bursting = False
+        self.camera_model = None
+        self.camera_connected = False
 
         self._stop_event = threading.Event()
         # Default settings that get overwritten by the Web UI
@@ -19,6 +21,49 @@ class CameraManager:
             "blue_gain": 1.5,
             "contrast": 1.0,
             "brightness": 0.0
+        }
+        
+        # Detect camera on init
+        self._detect_camera()
+
+    def _detect_camera(self):
+        """Detect if camera is connected and get model info"""
+        try:
+            # Try to get camera info using libcamera-hello
+            result = subprocess.run(
+                ["libcamera-hello", "--list-cameras"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                output = result.stdout
+                # Parse camera model from output
+                if "0:" in output or "imx219" in output.lower():
+                    self.camera_connected = True
+                    if "imx219" in output.lower():
+                        self.camera_model = "Sony IMX219 (8MP)"
+                    elif "imx477" in output.lower():
+                        self.camera_model = "Sony IMX477 (12MP)"
+                    elif "imx378" in output.lower():
+                        self.camera_model = "Sony IMX378 (12MP)"
+                    else:
+                        # Extract model name from output
+                        for line in output.split('\n'):
+                            if 'imx' in line.lower() or 'sensor' in line.lower():
+                                self.camera_model = line.strip()
+                                break
+                        if not self.camera_model:
+                            self.camera_model = "Raspberry Pi Camera"
+        except Exception as e:
+            print(f"Camera detection failed: {e}")
+            self.camera_connected = False
+
+    def get_camera_info(self):
+        """Return camera connection status and model"""
+        return {
+            "connected": self.camera_connected,
+            "model": self.camera_model or "Unknown"
         }
 
     def update_settings(self, new_settings: dict):

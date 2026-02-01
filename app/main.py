@@ -91,6 +91,34 @@ async def read_sensors():
 
 ''' 
 ==========================================
+   Health/Status Endpoints
+========================================== 
+'''
+@app.get("/api/health")
+async def get_health():
+    """Returns status of camera, sensors, and disk"""
+    import shutil
+    
+    # Camera info from manager
+    cam_info = cam_manager.get_camera_info()
+    cam_status = "OK" if cam_manager.is_previewing or cam_manager.is_bursting else "IDLE"
+    
+    # Disk usage
+    disk = shutil.disk_usage("/")
+    disk_total_gb = disk.total // (1024**3)
+    disk_used_gb = disk.used // (1024**3)
+    disk_pct = (disk.used / disk.total) * 100
+    
+    return {
+        "camera_connected": cam_info["connected"],
+        "camera_model": cam_info["model"],
+        "camera_status": cam_status,
+        "sensor": "OK",
+        "disk": f"{disk_used_gb}/{disk_total_gb}GB ({disk_pct:.1f}%)"
+    }
+
+''' 
+==========================================
    Camera Setting Management Endpoint
 ========================================== 
 '''

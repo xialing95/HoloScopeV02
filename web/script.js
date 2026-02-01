@@ -374,9 +374,34 @@ async function handleStopPreview() {
     notify("Preview Stopped", "neutral");
 }
 
+// --- UTILITY: Update Health Indicators ---
+async function updateHealth() {
+    try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        
+        const camEl = document.getElementById('health-cam');
+        const sensorEl = document.getElementById('health-sensor');
+        const diskEl = document.getElementById('health-disk');
+        
+        // Camera status with model and connection info
+        const camStatus = data.camera_connected 
+            ? `${data.camera_model} (${data.camera_status})` 
+            : "Not Connected";
+        if (camEl) camEl.innerText = `CAM: ${camStatus}`;
+        
+        if (sensorEl) sensorEl.innerText = `SENSOR: ${data.sensor}`;
+        if (diskEl) diskEl.innerText = `DISK: ${data.disk}`;
+    } catch (err) {
+        console.warn("Health poll failed:", err);
+    }
+}
+
 // Start Polling
 setInterval(updateSensors, 2000);  
 setInterval(pollStatus, 2000); 
+setInterval(updateHealth, 5000);  // Update health every 5 seconds
 // Run once on page load
 refreshFiles();
+updateHealth();
 
