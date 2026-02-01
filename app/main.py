@@ -114,7 +114,7 @@ async def get_health():
         "camera_model": cam_info["model"],
         "camera_status": cam_status,
         "sensor": "OK",
-        "disk": f"{disk_used_gb}/{disk_total_gb}GB ({disk_pct:.1f}%)"
+        "disk": f"{disk_used_gb}/{disk_total_gb}GB"
     }
 
 ''' 

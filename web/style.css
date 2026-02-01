@@ -74,20 +74,21 @@ body {
 
 .health-indicators {
     display: flex;
-    gap: 6px;
-    flex-shrink: 0;
+    gap: 4px;
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 60%;
 }
 
 .health-pill {
     background: #f5f5f7;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.7rem;
-    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
     white-space: nowrap;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Mono", "Monaco", "Consolas", monospace;
 }
 
 /* Status indicator colors (use colored text and borders) */

@@ -384,14 +384,18 @@ async function updateHealth() {
         const sensorEl = document.getElementById('health-sensor');
         const diskEl = document.getElementById('health-disk');
         
-        // Camera status with model and connection info
+        // Compact format for health pills
         const camStatus = data.camera_connected 
-            ? `${data.camera_model} (${data.camera_status})` 
-            : "Not Connected";
-        if (camEl) camEl.innerText = `CAM: ${camStatus}`;
+            ? `${data.camera_model}` 
+            : "No Cam";
+        if (camEl) camEl.innerText = `CAM:${camStatus}`;
         
-        if (sensorEl) sensorEl.innerText = `SENSOR: ${data.sensor}`;
-        if (diskEl) diskEl.innerText = `DISK: ${data.disk}`;
+        if (sensorEl) sensorEl.innerText = `SENS:${data.sensor}`;
+        if (diskEl) {
+            // Compact disk format: "6/28GB" instead of "6/28GB (21.4%)"
+            const diskMatch = data.disk.match(/(\d+\/\d+GB)/);
+            diskEl.innerText = diskMatch ? `DSK:${diskMatch[1]}` : `DSK:${data.disk}`;
+        }
     } catch (err) {
         console.warn("Health poll failed:", err);
     }
