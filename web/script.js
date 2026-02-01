@@ -111,8 +111,8 @@ async function refreshFiles() {
                 fileItem.innerHTML = `
                     <span class="file-name" title="${fileName}">${shortName}</span>
                     <div class="file-actions">
-                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>↓</a>
-                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">x</button>                    
+                        <a href="${API_BASE}/api/download/${fileName}" class="btn-small btn-green" download>↓</a>
+                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">×</button>
                     </div>
                 `;
                 fileList.appendChild(fileItem);
@@ -260,7 +260,7 @@ async function handleBurstStart() {
 
     notify(`Project ${payload.project_name} started...`, "success");
 
-    const response = await fetch(`${API_BASE}/api/capture/burst`, {
+    const response = await fetch(`${API_BASE}/capture/burst`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
