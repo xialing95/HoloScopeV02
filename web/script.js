@@ -224,6 +224,12 @@ async function handleNetworkUpdate(mode) {
    6. BURST INITIALIZATION & LOOPS
    ========================================== */
 async function handleBurstStart() {
+    // 1. Stop the local JS preview timer so it stops hammering /api/preview
+    if (previewInterval) {
+        clearInterval(previewInterval);
+        previewInterval = null;
+    }
+
     const payload = {
         project_name: document.getElementById('proj-name').value,
         burst_count: parseInt(document.getElementById('burst-count').value),
@@ -236,11 +242,15 @@ async function handleBurstStart() {
 
     notify(`Project ${payload.project_name} started...`, "success");
 
-    await fetch(`${API_BASE}/capture/burst`, {
+    const response = await fetch(`${API_BASE}/api/capture/burst`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
+    
+    if (response.ok) {
+        notify("Burst Active - Preview Paused", "success");
+    }
 };
 
 async function handleBurstStop() {

@@ -132,8 +132,9 @@ class BurstRequest(BaseModel):
 
 @app.post("/api/capture/burst")
 async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
-    if cam_manager.is_running:
-        return {"status": "error", "message": "A capture is already in progress."}
+    cam_manager.stop_capture()
+    time.sleep(0.5)
+    cam_manager._stop_event.clear()
     
     background_tasks.add_task(
         cam_manager.run_burst_sequence, 
