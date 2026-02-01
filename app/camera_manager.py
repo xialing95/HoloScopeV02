@@ -14,7 +14,9 @@ class CameraManager:
             "iso": 100,
             "awb_enabled": True,
             "red_gain": 1.5,
-            "blue_gain": 1.5
+            "blue_gain": 1.5,
+            "contrast": 1.0,
+            "brightness": 0.0
         }
 
     def update_settings(self, new_settings: dict):

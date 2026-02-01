@@ -99,6 +99,8 @@ class CameraSettings(BaseModel):
     awb_enabled: bool
     red_gain: float
     blue_gain: float
+    constrast: float
+    brightness: float
 
 @app.post("/api/settings")
 async def save_settings(config: dict):

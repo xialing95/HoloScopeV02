@@ -158,7 +158,9 @@ async function applyCameraTuning() {
         iso: parseInt(document.getElementById('iso').value),
         awb_enabled: document.getElementById('awb-toggle').checked,
         red_gain: parseFloat(document.getElementById('red-gain').value),
-        blue_gain: parseFloat(document.getElementById('blue-gain').value)
+        blue_gain: parseFloat(document.getElementById('blue-gain').value),
+        contrast:parseFloat(document.getElementById('contrast').value),
+        brightness:parseFloat(document.getElementById('brightness').value),
     };
 
     try {
