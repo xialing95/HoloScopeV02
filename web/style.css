@@ -17,25 +17,57 @@ body {
 }
 
 /* ==========================================
-   2. SYSTEM STATUS BAR (Fixed)
+   2. SYSTEM STATUS BAR (Prominent & Dynamic)
    ========================================= */
 #system-status-bar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px; /* Explicit height for consistent spacing */
+    height: 50px;
     z-index: 1000;
-    
-    /* Center the text vertically and horizontally */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    
-    font-weight: 600;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    border-bottom: 1px solid #d2d2d7;
+    gap: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease; /* Smooth color transitions */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Status States */
+.status-ready { 
+    background-color: #28a745; 
+    color: white; 
+}
+.status-preview { 
+    background-color: #0071e3; 
+    color: white; 
+}
+.status-busy { 
+    background-color: #ff9f0a; 
+    color: white; 
+    animation: pulse 2s infinite; 
+}
+.status-error { 
+    background-color: #ff3b30; 
+    color: white; 
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* Small badge inside the bar */
+#status-label {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
 }
 
 /* ==========================================
@@ -126,36 +158,91 @@ input:focus {
     color: #0071e3;
 }
 
-button {
+/* ==========================================
+   BUTTON BASE STYLES
+   ========================================= */
+button, .btn-link {
     width: 100%;
-    padding: 14px;
-    margin-top: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
     border: none;
     border-radius: 10px;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    text-decoration: none; /* For <a> tags styled as buttons */
 }
 
-button:active { transform: scale(0.97); }
+button:active { 
+    transform: scale(0.97); 
+}
 
-.btn-blue { background: #0071e3; color: white; } /* Primary Blue */
+button:disabled {
+    background-color: #d2d2d7 !important;
+    color: #86868b !important;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* COLOR VARIANTS*/
+/* Primary - Apple Style Blue */
+.btn-blue { 
+    background: #0071e3; 
+    color: white; 
+}
 .btn-blue:hover { background: #0077ed; }
 
-.btn-blue  { background: #f5f5f7; color: #0071e3; border: 1px solid #d2d2d7; }
-.btn-warn  { background: #1d1d1f; color: white; } /* Black button for high contrast */
-
-.btn-small {
-    padding: 4px 8px;
-    font-size: 12px;
-    border-radius: 4px;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
+/* Success - Green for Starts/Captures */
+.btn-green { 
+    background-color: #28a745; 
+    color: white; 
 }
-.btn-green { background-color: #28a745; color: white; }
-.btn-red { background-color: #dc3545; color: white; }
+.btn-green:hover { background-color: #218838; }
+
+/* Danger - Red for Deletes/Stops */
+.btn-red { 
+    background-color: #dc3545; 
+    color: white; 
+}
+.btn-red:hover { background-color: #c82333; }
+
+/* Secondary - Grey for minor actions */
+.btn-grey { 
+    background: #f5f5f7; 
+    color: #1d1d1f; 
+    border: 1px solid #d2d2d7; 
+}
+.btn-grey:hover { background: #e8e8ed; }
+
+/* Warning/High Contrast - Black */
+.btn-warn { 
+    background: #1d1d1f; 
+    color: white; 
+}
+
+/* SIZE MODIFIERS */
+.btn-small {
+    width: auto;      /* Don't fill 100% width */
+    padding: 6px 12px;
+    font-size: 13px;
+    margin-top: 0;    /* Remove top margin for inline lists */
+    border-radius: 6px;
+}
+
+/* Gallery Controls Grouping */
+.gallery-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.gallery-controls button {
+    margin-top: 0; /* Align buttons in a row */
+}
+
 
 /* ==========================================
    6. CAMERA & GALLERY

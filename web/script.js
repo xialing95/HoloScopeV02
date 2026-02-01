@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. Files Management
     listen('refresh-btn', refreshFiles);
+    listen('delete-all-btn', deleteAllFiles);
 
     // 6. Network
     listen('wifi-btn', () => handleNetworkUpdate('wifi'));
@@ -146,6 +147,21 @@ async function deleteFile(filename) {
         }
     } catch (err) {
         notify(`Error: ${err.message}`, "error");
+    }
+}
+
+async function deleteAllFiles() {
+    const confirmWipe = confirm("ARE YOU SURE? This will permanently delete EVERY file in the data folder.");
+    if (!confirmWipe) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/files/delete-all`, { method: 'DELETE' });
+        if (response.ok) {
+            notify("Data folder cleared", "success");
+            refreshFiles(); // Update the UI
+        }
+    } catch (err) {
+        notify("Failed to clear folder", "error");
     }
 }
 
