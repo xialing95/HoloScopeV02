@@ -140,11 +140,22 @@ button {
 
 button:active { transform: scale(0.97); }
 
-.btn-green { background: #0071e3; color: white; } /* Primary Blue */
-.btn-green:hover { background: #0077ed; }
+.btn-blue { background: #0071e3; color: white; } /* Primary Blue */
+.btn-blue:hover { background: #0077ed; }
 
 .btn-blue  { background: #f5f5f7; color: #0071e3; border: 1px solid #d2d2d7; }
 .btn-warn  { background: #1d1d1f; color: white; } /* Black button for high contrast */
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+}
+.btn-green { background-color: #28a745; color: white; }
+.btn-red { background-color: #dc3545; color: white; }
 
 /* ==========================================
    6. CAMERA & GALLERY
