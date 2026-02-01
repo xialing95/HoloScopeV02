@@ -224,11 +224,21 @@ button:disabled {
 
 /* SIZE MODIFIERS */
 .btn-small {
-    width: auto;      /* Don't fill 100% width */
-    padding: 6px 12px;
     font-size: 13px;
     margin-top: 0;    /* Remove top margin for inline lists */
     border-radius: 6px;
+    width: 40px;         /* Fixed width for 'x' and '↓' */
+    height: 34px;        /* Fixed height for a square-ish look */
+    padding: 0;          /* Reset padding to center the icons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;      /* Prevent buttons from squishing */
+}
+
+.file-actions a.btn-small {
+    line-height: 1;      /* Center the arrow vertically */
+    font-size: 1.2rem;   /* Make the arrow a bit bigger */
 }
 
 /* Gallery Controls Grouping */
@@ -280,6 +290,13 @@ button:disabled {
     padding: 10px;
     background: #f9f9f9;
     border-radius: 4px;
+}
+
+.file-actions {
+    display: flex;       /* Align children horizontally */
+    gap: 8px;            /* Space between buttons */
+    align-items: center; /* Vertical alignment */
+    justify-content: flex-end; /* Push to the right side of the card */
 }
 
 .file-item {
