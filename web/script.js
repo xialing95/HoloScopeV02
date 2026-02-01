@@ -8,21 +8,61 @@ const API_BASE = "/api";
  * @param {string} message - The text to display
  * @param {string} type - 'neutral', 'success', or 'error'
  */
+
 function notify(message, type = 'neutral') {
     const bar = document.getElementById('system-status-bar');
     const msg = document.getElementById('status-message');
     
-    if (!bar || !msg) return; // Guard clause if HTML isn't ready
+    if (!bar || !msg) return;
 
+    // 1. Update the visual state and main message
     msg.innerText = message;
-    bar.className = `status-${type}`;
+    
+    // We use a helper to ensure we keep the base status-bar styles
+    bar.className = ''; 
+    bar.classList.add(`status-${type}`);
 
-    // Reset to neutral after 5 seconds for success messages
-    if (type === 'success') {
+    // 2. Logic for transient notifications (Success/Error)
+    // We don't want "Settings Saved" to stay there forever.
+    if (type === 'success' || type === 'error') {
         setTimeout(() => {
-            msg.innerText = "HoloScope Ready";
-            bar.className = 'status-neutral';
+            // After 5 seconds, we don't just reset to "Ready"
+            // We check if the poller is running to restore the correct state
+            if (window.currentCameraState) {
+                updateTrackingText(window.currentCameraState);
+            } else {
+                msg.innerText = "HoloScope Ready";
+                bar.className = 'status-ready';
+            }
         }, 5000);
+    }
+}
+
+// --- UTILITY: Poll status of camera ---
+async function pollStatus() {
+    try {
+        const response = await fetch(`${API_BASE}/status`);
+        const data = await response.json();
+        
+        // Save globally so notify() can see it
+        window.currentCameraState = data;
+
+        const tracker = document.getElementById('camera-tracker');
+        const fill = document.getElementById('camera-progress-fill');
+
+        if (data.is_previewing) {
+            tracker.innerText = "[ PREVIEWING LIVE ]";
+            fill.style.width = "100%";
+        } else if (data.is_bursting) {
+            tracker.innerText = `[ BURST: ${data.current_frame}/${data.total_frames} ]`;
+            const p = (data.current_frame / data.total_frames) * 100;
+            fill.style.width = `${p}%`;
+        } else {
+            tracker.innerText = "[ CAMERA IDLE ]";
+            fill.style.width = "0%";
+        }
+    } catch (e) {
+        tracker.innerText = "[ OFFLINE ]";
     }
 }
 
@@ -111,7 +151,7 @@ async function refreshFiles() {
                 fileItem.innerHTML = `
                     <span class="file-name" title="${fileName}">${shortName}</span>
                     <div class="file-actions">
-                        <a href="${API_BASE}/api/download/${fileName}" class="btn-small btn-green" download>↓</a>
+                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>↓</a>
                         <button class="btn-small btn-red delete-btn" data-filename="${fileName}">×</button>
                     </div>
                 `;
@@ -155,7 +195,7 @@ async function deleteAllFiles() {
     if (!confirmWipe) return;
 
     try {
-        const response = await fetch(`${API_BASE}/api/files/delete-all`, { method: 'DELETE' });
+        const response = await fetch(`${API_BASE}/files/delete-all`, { method: 'DELETE' });
         if (response.ok) {
             notify("Data folder cleared", "success");
             refreshFiles(); // Update the UI
@@ -214,7 +254,7 @@ async function handleNetworkUpdate(mode) {
     notify(`Switching to ${mode}...`, "neutral");
 
     try {
-        const response = await fetch(`${API_BASE}/api/network`, {
+        const response = await fetch(`${API_BASE}/network`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

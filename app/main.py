@@ -27,7 +27,6 @@ def get_settings():
         return json.load(f)
 
 # --- API ROUTES ---
-
 import subprocess
 from fastapi.responses import FileResponse
 '''
@@ -41,7 +40,7 @@ async def get_preview():
     if cam_manager._stop_event.is_set():
         return {"error": "Preview stopped"}
 
-    if cam_manager.is_running:
+    if cam_manager.is_bursting:
         return {"error": "Camera busy with Timelapse"}
     
     preview_path = "/tmp/preview.jpg"
@@ -76,6 +75,7 @@ async def get_preview():
 @app.post("/api/preview/start")
 async def start_preview_mode():
     cam_manager._stop_event.clear()
+    cam_manager.is_previewing = True
     print("Preview Mode re-enabled")
     return {"status": "ready"}
 
@@ -146,6 +146,7 @@ async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
 @app.post("/api/capture/stop")
 async def stop_burst():
     cam_manager.stop_capture()
+    cam_manager.is_previewing = False
     return {"status": "success", "message": "Stop signal sent."}
 
 ''' 
@@ -224,6 +225,20 @@ async def handle_network(request: NetworkRequest, background_tasks: BackgroundTa
     
     return {"status": "Error", "detail": "Invalid mode"}
 
+''' 
+==========================================
+   Status Manager Endpoint
+========================================== 
+'''
+@app.get("/api/status")
+async def get_status():
+    return {
+        "is_previewing": cam_manager.is_previewing, # Boolean flag
+        "is_bursting": cam_manager.is_bursting,       # Boolean flag
+        "current_frame": cam_manager.current_frame,
+        "total_frames": cam_manager.total_frames,
+        "message": "Burst in Progress" if cam_manager.is_bursting else "System Ready"
+    }
 
 ''' 
 ==========================================

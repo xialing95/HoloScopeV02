@@ -6,8 +6,12 @@ from datetime import datetime
 
 class CameraManager:
     def __init__(self):
+        self.is_previewing = False
+        self.is_bursting = False
+        self.current_frame = 0
+        self.total_frames = 0
+
         self._stop_event = threading.Event()
-        self.is_running = False
         # Default settings that get overwritten by the Web UI
         self.settings = {
             "shutter": 500,
@@ -30,7 +34,7 @@ class CameraManager:
 
     def run_burst_sequence(self, project_name, burst_count, interval, burst_gap):
         self._stop_event.clear()
-        self.is_running = True
+        self.is_bursting = True
         
         base_path = f"/home/pi/HoloScopeV02/data/"
         os.makedirs(base_path, exist_ok=True)
@@ -75,7 +79,9 @@ class CameraManager:
                 for _ in range(int(burst_gap * 60)):
                     if self._stop_event.is_set(): break
                     time.sleep(1)
+                self.is_bursting = True
         finally:
-            self.is_running = False
+            self.is_bursting = False
+            self.current_frame = 0
 
 cam_manager = CameraManager()
