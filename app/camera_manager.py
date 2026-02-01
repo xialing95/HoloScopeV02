@@ -40,26 +40,41 @@ class CameraManager:
             output = list_result.stdout.lower()
             stderr = list_result.stderr.lower() if list_result.stderr else ""
 
-            # Check if camera was detected
-            if list_result.returncode == 0 and "detected" in output:
+            # Debug output - remove in production
+            print(f"rpicam-hello stdout: {list_result.stdout[:300]}")
+            print(f"rpicam-hello stderr: {list_result.stderr[:300] if list_result.stderr else 'none'}")
+
+            # Check if camera was detected - look for various indicators
+            has_camera = False
+            combined_output = output + " " + stderr
+
+            # Look for camera indicators in output
+            if "available cameras" in combined_output or "0 :" in combined_output:
+                has_camera = True
+            elif "imx477" in combined_output or "imx708" in combined_output or "imx219" in combined_output:
+                has_camera = True
+            elif "connected" in combined_output:
+                has_camera = True
+
+            if has_camera:
                 self.camera_connected = True
 
                 # Parse camera model from output
-                if "imx477" in output:
+                if "imx477" in combined_output:
                     self.camera_model = "IMX477"
-                elif "imx708" in output:
+                elif "imx708" in combined_output:
                     self.camera_model = "IMX708"
-                elif "imx219" in output:
+                elif "imx219" in combined_output:
                     self.camera_model = "IMX219"
-                elif "imx296" in output:
+                elif "imx296" in combined_output:
                     self.camera_model = "IMX296"
-                elif "imx462" in output:
+                elif "imx462" in combined_output:
                     self.camera_model = "IMX462"
                 else:
-                    self.camera_model = "Raspberry Pi Camera"
+                    self.camera_model = "Pi Camera"
             else:
                 self.camera_connected = False
-                self.camera_model = "No Camera Detected"
+                self.camera_model = "No Camera"
 
         except Exception as e:
             print(f"Camera detection failed: {e}")
