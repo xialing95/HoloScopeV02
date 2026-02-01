@@ -380,6 +380,8 @@ async function handleStopPreview() {
 }
 
 // Start Polling
-setInterval(updateSensors, 2000);   
+setInterval(updateSensors, 2000);  
+setInterval(pollStatus, 2000); 
 // Run once on page load
 refreshFiles();
+
