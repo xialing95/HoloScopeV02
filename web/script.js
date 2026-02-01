@@ -37,11 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Preview Controls
     listen('start-preview-btn', handleStartPreview);
-    listen('stop-preview-btn', handleStopEverything);
+    listen('stop-preview-btn', handleStopPreview);
     
     // 2. Burst Controls
     listen('burst-btn', handleBurstStart);
-    listen('stop-btn', handleStopEverything); // Both stop buttons do the same
+    listen('stop-btn', handleBurstStop); // Both stop buttons do the same
     
     // 3. Camera Tuning
     listen('save-settings-btn', applyCameraTuning);
@@ -213,87 +213,87 @@ async function handleNetworkUpdate(mode) {
 /* ==========================================
    6. BURST INITIALIZATION & LOOPS
    ========================================== */
-// document.getElementById('burst-btn').addEventListener('click', async () => {
-//     const payload = {
-//         project_name: document.getElementById('proj-name').value,
-//         burst_count: parseInt(document.getElementById('burst-count').value),
-//         interval: parseInt(document.getElementById('time-interval').value),
-//         burst_gap: parseInt(document.getElementById('burst-gap').value)
-//     };
+async function handleBurstStart() {
+    const payload = {
+        project_name: document.getElementById('proj-name').value,
+        burst_count: parseInt(document.getElementById('burst-count').value),
+        interval: parseInt(document.getElementById('time-interval').value),
+        burst_gap: parseInt(document.getElementById('burst-gap').value)
+    };
 
-//     if (!payload.project_name) return notify("Name required!", "error");
-//     if (payload.interval < 2) return notify("Min interval is 2s", "error");
+    if (!payload.project_name) return notify("Name required!", "error");
+    if (payload.interval < 2) return notify("Min interval is 2s", "error");
 
-//     notify(`Project ${payload.project_name} started...`, "success");
+    notify(`Project ${payload.project_name} started...`, "success");
 
-//     await fetch(`${API_BASE}/capture/burst`, {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(payload)
-//     });
-// });
+    await fetch(`${API_BASE}/capture/burst`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+};
 
-// document.getElementById('stop-btn').addEventListener('click', async () => {
-//     // Disable the button immediately to prevent double-clicks
-//     const stopBtn = document.getElementById('stop-btn');
-//     stopBtn.disabled = true;
-//     stopBtn.innerText = "Stopping...";
+async function handleBurstStop() {
+    // Disable the button immediately to prevent double-clicks
+    const stopBtn = document.getElementById('stop-btn');
+    stopBtn.disabled = true;
+    stopBtn.innerText = "Stopping...";
 
-//     try {
-//         const response = await fetch(`${API_BASE}/capture/stop`, {
-//             method: 'POST'
-//         });
+    try {
+        const response = await fetch(`${API_BASE}/capture/stop`, {
+            method: 'POST'
+        });
 
-//         if (response.ok) {
-//             notify("Stop signal sent! Finishing current photo...", "neutral");
-//         } else {
-//             notify("Failed to stop capture", "error");
-//         }
-//     } catch (err) {
-//         notify("Connection error", "error");
-//     } finally {
-//         // Re-enable after a short delay
-//         setTimeout(() => {
-//             stopBtn.disabled = false;
-//             stopBtn.innerText = "Stop Capture";
-//         }, 2000);
-//     }
-// });
+        if (response.ok) {
+            notify("Stop signal sent! Finishing current photo...", "neutral");
+        } else {
+            notify("Failed to stop capture", "error");
+        }
+    } catch (err) {
+        notify("Connection error", "error");
+    } finally {
+        // Re-enable after a short delay
+        setTimeout(() => {
+            stopBtn.disabled = false;
+            stopBtn.innerText = "Stop Capture";
+        }, 2000);
+    }
+};
 
 /* ==========================================
    7. PREVIEW MANAGEMENT
    ========================================== */
-// let previewInterval = null;
+let previewInterval = null;
 
-// async function startPreview() {
-//     // 1. Tell the Pi to reset the stop flag
-//     const response = await fetch(`${API_BASE}/preview/start`, { method: 'POST' });
+async function handleStartPreview() {
+    // 1. Tell the Pi to reset the stop flag
+    const response = await fetch(`${API_BASE}/preview/start`, { method: 'POST' });
     
-//     if (response.ok) {
-//         if (previewInterval) clearInterval(previewInterval);
+    if (response.ok) {
+        if (previewInterval) clearInterval(previewInterval);
         
-//         notify("Preview Started", "success");
+        notify("Preview Started", "success");
 
-//         previewInterval = setInterval(async () => {
-//             const img = document.getElementById('preview-frame');
-//             // Adding the timestamp 't' prevents the browser from caching a 'failed' image
-//             img.src = `${API_BASE}/api/preview?t=${new Date().getTime()}`;
-//         }, 3000); 
-//     }
-// }
+        previewInterval = setInterval(async () => {
+            const img = document.getElementById('preview-frame');
+            // Adding the timestamp 't' prevents the browser from caching a 'failed' image
+            img.src = `${API_BASE}/api/preview?t=${new Date().getTime()}`;
+        }, 3000); 
+    }
+}
 
-// async function stopPreview() {
-//     // 1. Tell the Server to stop
-//     await fetch(`${API_BASE}/capture/stop`, { method: 'POST' });
+async function handleStopPreview() {
+    // 1. Tell the Server to stop
+    await fetch(`${API_BASE}/capture/stop`, { method: 'POST' });
     
-//     // 2. Clear the local JS interval
-//     if (previewInterval) {
-//         clearInterval(previewInterval);
-//         previewInterval = null;
-//     }
+    // 2. Clear the local JS interval
+    if (previewInterval) {
+        clearInterval(previewInterval);
+        previewInterval = null;
+    }
     
-//     notify("Preview Stopped", "neutral");
-// }
+    notify("Preview Stopped", "neutral");
+}
 
 // Start Polling
 setInterval(updateSensors, 2000);   
