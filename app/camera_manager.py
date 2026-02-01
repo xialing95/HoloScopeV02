@@ -29,55 +29,37 @@ class CameraManager:
     def _detect_camera(self):
         """Detect if camera is connected and get model info using rpicam"""
         try:
-            # Check if rpicam-still is available
-            result = subprocess.run(
-                ["which", "rpicam-still"],
+            # Use rpicam-hello --list-cameras to detect camera
+            list_result = subprocess.run(
+                ["rpicam-hello", "--list-cameras"],
                 capture_output=True,
                 text=True,
-                timeout=5
-            )
-            if result.returncode != 0:
-                self.camera_connected = False
-                return
-
-            # Try a quick capture to verify camera is working
-            check_result = subprocess.run(
-                ["rpicam-still", "--timeout", "100", "--nopreview", "-o", "/dev/null"],
-                capture_output=True,
-                text=True,
-                timeout=15
+                timeout=10
             )
 
-            # Check for camera-related errors in output
-            stderr_lower = check_result.stderr.lower() if check_result.stderr else ""
-            if check_result.returncode == 0:
-                self.camera_connected = True
-            elif "failed to detect" in stderr_lower or "no camera" in stderr_lower:
-                self.camera_connected = False
-            else:
-                # Camera might be connected but something else failed
+            output = list_result.stdout.lower()
+            stderr = list_result.stderr.lower() if list_result.stderr else ""
+
+            # Check if camera was detected
+            if list_result.returncode == 0 and "detected" in output:
                 self.camera_connected = True
 
-            # Try to get sensor info using vcgencmd
-            sensor_result = subprocess.run(
-                ["vcgencmd", "get_camera"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-
-            if sensor_result.returncode == 0 and "detected=1" in sensor_result.stdout:
-                output = sensor_result.stdout
-                if "revision=1" in output or "imx477" in output.lower():
-                    self.camera_model = "Raspberry Pi Camera HQ (IMX477)"
-                elif "revision=2" in output or "imx708" in output.lower():
-                    self.camera_model = "Raspberry Pi Camera v3 (IMX708)"
-                elif "imx219" in output.lower():
-                    self.camera_model = "Raspberry Pi Camera v2 (IMX219)"
+                # Parse camera model from output
+                if "imx477" in output:
+                    self.camera_model = "IMX477"
+                elif "imx708" in output:
+                    self.camera_model = "IMX708"
+                elif "imx219" in output:
+                    self.camera_model = "IMX219"
+                elif "imx296" in output:
+                    self.camera_model = "IMX296"
+                elif "imx462" in output:
+                    self.camera_model = "IMX462"
                 else:
                     self.camera_model = "Raspberry Pi Camera"
             else:
-                self.camera_model = "Raspberry Pi Camera (Unknown)"
+                self.camera_connected = False
+                self.camera_model = "No Camera Detected"
 
         except Exception as e:
             print(f"Camera detection failed: {e}")
