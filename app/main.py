@@ -154,14 +154,6 @@ async def stop_burst():
    File Management Endpoints
 ========================================== 
 '''
-@app.delete("/api/files/{filename}")
-async def delete_file(filename: str):
-    file_path = os.path.join(PHOTO_DIR, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        return {"status": "deleted"}
-    raise HTTPException(status_code=404, detail="File not found")
-
 @app.get("/api/files")
 async def list_files():
     files = sorted(os.listdir(PHOTO_DIR), reverse=True)
@@ -183,17 +175,26 @@ async def download_file(file_path: str):
     print(f"File not found: {full_path}")
     return {"error": f"File not found at {full_path}"}
 
-# --- Delete All Files ---
-@app.delete("/api/files/delete-all")
-async def delete_all_files():
-    try:
-        for filename in os.listdir(PHOTO_DIR):
-            file_path = os.path.join(PHOTO_DIR, filename)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-        return {"status": "success", "message": "All files deleted"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# --- Single endpoint for both individual file delete and delete-all ---
+@app.delete("/api/files/{filename}")
+async def delete_file(filename: str):
+    # Handle special "delete-all" command
+    if filename == "delete-all":
+        try:
+            for f in os.listdir(PHOTO_DIR):
+                file_path = os.path.join(PHOTO_DIR, f)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            return {"status": "success", "message": "All files deleted"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # Handle individual file deletion
+    file_path = os.path.join(PHOTO_DIR, filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return {"status": "deleted"}
+    raise HTTPException(status_code=404, detail="File not found")
 
 ''' 
 ==========================================
