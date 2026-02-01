@@ -112,7 +112,7 @@ async def update_camera_settings(settings: CameraSettings):
         # We pass the dictionary version of the model to our manager
         cam_manager.update_settings(settings.dict())
         
-        print(f"📸 Camera Updated: Shutter={settings.shutter}, ISO={settings.iso}")
+        print(f"Camera Updated: Shutter={settings.shutter}, ISO={settings.iso}")
         return {"status": "success", "message": "Camera settings updated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

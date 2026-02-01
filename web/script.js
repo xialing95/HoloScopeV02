@@ -83,10 +83,10 @@ async function updateSensors() {
 /* ==========================================
    3. FILE MANAGEMENT (GALLERY)
    ========================================== */
-const fileList = document.getElementById('file-list');
-const refreshBtn = document.getElementById('refresh-btn');
-
 async function refreshFiles() {
+    const fileList = document.getElementById('file-list');
+    const refreshBtn = document.getElementById('refresh-btn');
+    
     refreshBtn.disabled = true;
     refreshBtn.innerText = "Loading...";
 
@@ -110,10 +110,18 @@ async function refreshFiles() {
                 fileItem.innerHTML = `
                     <span class="file-name" title="${fileName}">${shortName}</span>
                     <div class="file-actions">
-                        <a href="${API_BASE}/download/${fileName}" class="btn-small">Download</a>
+                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>Download</a>
+                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">Delete</button>                    
                     </div>
                 `;
                 fileList.appendChild(fileItem);
+            });
+            // ATTACH LISTENERS: Link the new buttons to your deleteFile function
+            fileList.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const fname = btn.getAttribute('data-filename');
+                    deleteFile(fname); // Calling your existing function
+                });
             });
         }
     } catch (err) {
