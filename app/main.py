@@ -235,8 +235,6 @@ async def get_status():
     return {
         "is_previewing": cam_manager.is_previewing, # Boolean flag
         "is_bursting": cam_manager.is_bursting,       # Boolean flag
-        "current_frame": cam_manager.current_frame,
-        "total_frames": cam_manager.total_frames,
         "message": "Burst in Progress" if cam_manager.is_bursting else "System Ready"
     }
 

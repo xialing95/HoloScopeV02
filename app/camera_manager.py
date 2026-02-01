@@ -8,8 +8,6 @@ class CameraManager:
     def __init__(self):
         self.is_previewing = False
         self.is_bursting = False
-        self.current_frame = 0
-        self.total_frames = 0
 
         self._stop_event = threading.Event()
         # Default settings that get overwritten by the Web UI

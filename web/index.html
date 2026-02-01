@@ -8,18 +8,20 @@
 </head>
 <body>
     <div class="grid-container">
-        
+
         <div id="system-status-bar" class="status-ready">
             <div class="status-content">
                 <span id="status-label">SYSTEM:</span>
                 <span id="status-message">HoloScope Ready</span>
-                
                 <span id="camera-tracker" style="margin-left: 20px; font-family: monospace; opacity: 0.9;">
                     [ CAMERA IDLE ]
                 </span>
             </div>
-            <div id="camera-progress-bar">
-                <div id="camera-progress-fill"></div>
+            
+            <div class="health-indicators">
+                <span id="health-cam" class="health-pill">CAM: --</span>
+                <span id="health-sensor" class="health-pill">SENSOR: --</span>
+                <span id="health-disk" class="health-pill">DISK: --</span>
             </div>
         </div>
 

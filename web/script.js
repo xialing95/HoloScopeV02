@@ -48,18 +48,13 @@ async function pollStatus() {
         window.currentCameraState = data;
 
         const tracker = document.getElementById('camera-tracker');
-        const fill = document.getElementById('camera-progress-fill');
 
         if (data.is_previewing) {
             tracker.innerText = "[ PREVIEWING LIVE ]";
-            fill.style.width = "100%";
         } else if (data.is_bursting) {
-            tracker.innerText = `[ BURST: ${data.current_frame}/${data.total_frames} ]`;
-            const p = (data.current_frame / data.total_frames) * 100;
-            fill.style.width = `${p}%`;
+            tracker.innerText = `[ BURST TIMELAPSE IN PROGRESS]`;
         } else {
             tracker.innerText = "[ CAMERA IDLE ]";
-            fill.style.width = "0%";
         }
     } catch (e) {
         tracker.innerText = "[ OFFLINE ]";
