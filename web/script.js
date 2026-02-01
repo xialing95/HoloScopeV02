@@ -285,10 +285,16 @@ async function handleStartPreview() {
         notify("Preview Started", "success");
 
         previewInterval = setInterval(async () => {
-            const img = document.getElementById('preview-frame');
-            // Adding the timestamp 't' prevents the browser from caching a 'failed' image
-            img.src = `${API_BASE}/api/preview?t=${new Date().getTime()}`;
-        }, 3000); 
+            const img = document.getElementById('live-preview');
+
+            if (img) {
+                // Adding the timestamp 't' prevents the browser from caching a 'failed' image
+                img.src = `${API_BASE}/preview?t=${new Date().getTime()}`;
+            } else {
+                console.error("Critical: 'live-preview' element not found.");
+                clearInterval(previewInterval);
+            }
+        }, 3000);
     }
 }
 
