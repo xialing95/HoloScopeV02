@@ -111,8 +111,8 @@ async function refreshFiles() {
                 fileItem.innerHTML = `
                     <span class="file-name" title="${fileName}">${shortName}</span>
                     <div class="file-actions">
-                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>Download</a>
-                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">Delete</button>                    
+                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>↓</a>
+                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">x</button>                    
                     </div>
                 `;
                 fileList.appendChild(fileItem);
@@ -255,6 +255,8 @@ async function handleBurstStart() {
 
     if (!payload.project_name) return notify("Name required!", "error");
     if (payload.interval < 2) return notify("Min interval is 2s", "error");
+    if (!payload.burst_count) return notify("Number of photos required!", "error");
+
 
     notify(`Project ${payload.project_name} started...`, "success");
 

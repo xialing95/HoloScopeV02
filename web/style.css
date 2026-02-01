@@ -17,7 +17,7 @@ body {
 }
 
 /* ==========================================
-   2. SYSTEM STATUS BAR (Prominent & Dynamic)
+   2. SYSTEM STATUS BAR (Solid & Prominent)
    ========================================= */
 #system-status-bar {
     position: fixed;
@@ -26,50 +26,48 @@ body {
     width: 100%;
     height: 50px;
     z-index: 1000;
+    
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 15px;
+    
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: all 0.3s ease; /* Smooth color transitions */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    /* Solid background and heavy shadow for readability while scrolling */
+    background-color: #ffffff; 
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+    border-bottom: 2px solid rgba(0,0,0,0.1);
 }
 
-/* Status States */
+/* Status States - Overriding background with solid colors */
 .status-ready { 
-    background-color: #28a745; 
-    color: white; 
+    background-color: #28a745 !important; 
+    color: #ffffff; 
 }
 .status-preview { 
-    background-color: #0071e3; 
-    color: white; 
+    background-color: #0071e3 !important; 
+    color: #ffffff; 
 }
 .status-busy { 
-    background-color: #ff9f0a; 
-    color: white; 
+    background-color: #ff9f0a !important; 
+    color: #ffffff; 
     animation: pulse 2s infinite; 
 }
 .status-error { 
-    background-color: #ff3b30; 
-    color: white; 
+    background-color: #ff3b30 !important; 
+    color: #ffffff; 
 }
 
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.8; }
-    100% { opacity: 1; }
-}
-
-/* Small badge inside the bar */
 #status-label {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.15); /* Darker contrast badge */
+    padding: 2px 10px;
     border-radius: 4px;
     font-size: 0.8em;
+    color: #ffffff;
 }
-
 /* ==========================================
    3. LAYOUT
    ========================================== */
