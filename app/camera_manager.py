@@ -22,39 +22,63 @@ class CameraManager:
             "contrast": 1.0,
             "brightness": 0.0
         }
-        
+
         # Detect camera on init
         self._detect_camera()
 
     def _detect_camera(self):
-        """Detect if camera is connected and get model info"""
+        """Detect if camera is connected and get model info using rpicam"""
         try:
-            # Try to get camera info using libcamera-hello
+            # Check if rpicam-still is available
             result = subprocess.run(
-                ["libcamera-hello", "--list-cameras"],
+                ["which", "rpicam-still"],
                 capture_output=True,
                 text=True,
                 timeout=5
             )
-            if result.returncode == 0:
-                output = result.stdout
-                # Parse camera model from output
-                if "0:" in output or "imx219" in output.lower():
-                    self.camera_connected = True
-                    if "imx219" in output.lower():
-                        self.camera_model = "Sony IMX219 (8MP)"
-                    elif "imx477" in output.lower():
-                        self.camera_model = "Sony IMX477 (12MP)"
-                    elif "imx378" in output.lower():
-                        self.camera_model = "Sony IMX378 (12MP)"
-                    else:
-                        # Extract model name from output
-                        for line in output.split('\n'):
-                            if 'imx' in line.lower() or 'sensor' in line.lower():
-                                self.camera_model = line.strip()
-                                break
-                        if not self.camera_model:
-                            self.camera_model = "Raspberry Pi Camera"
+            if result.returncode != 0:
+                self.camera_connected = False
+                return
+
+            # Try a quick capture to verify camera is working
+            check_result = subprocess.run(
+                ["rpicam-still", "--timeout", "100", "--nopreview", "-o", "/dev/null"],
+                capture_output=True,
+                text=True,
+                timeout=15
+            )
+
+            # Check for camera-related errors in output
+            stderr_lower = check_result.stderr.lower() if check_result.stderr else ""
+            if check_result.returncode == 0:
+                self.camera_connected = True
+            elif "failed to detect" in stderr_lower or "no camera" in stderr_lower:
+                self.camera_connected = False
+            else:
+                # Camera might be connected but something else failed
+                self.camera_connected = True
+
+            # Try to get sensor info using vcgencmd
+            sensor_result = subprocess.run(
+                ["vcgencmd", "get_camera"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if sensor_result.returncode == 0 and "detected=1" in sensor_result.stdout:
+                output = sensor_result.stdout
+                if "revision=1" in output or "imx477" in output.lower():
+                    self.camera_model = "Raspberry Pi Camera HQ (IMX477)"
+                elif "revision=2" in output or "imx708" in output.lower():
+                    self.camera_model = "Raspberry Pi Camera v3 (IMX708)"
+                elif "imx219" in output.lower():
+                    self.camera_model = "Raspberry Pi Camera v2 (IMX219)"
+                else:
+                    self.camera_model = "Raspberry Pi Camera"
+            else:
+                self.camera_model = "Raspberry Pi Camera (Unknown)"
+
         except Exception as e:
             print(f"Camera detection failed: {e}")
             self.camera_connected = False
@@ -78,16 +102,16 @@ class CameraManager:
     def run_burst_sequence(self, project_name, burst_count, interval, burst_gap):
         self._stop_event.clear()
         self.is_bursting = True
-        
+
         base_path = f"/home/pi/HoloScopeV02/data/"
         os.makedirs(base_path, exist_ok=True)
-        
+
         try:
             while not self._stop_event.is_set():
                 for i in range(burst_count):
                     if self._stop_event.is_set():
                         break
-                    
+
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f"{base_path}/{project_name}_{timestamp}_{i:03d}.dng"
 
@@ -111,7 +135,7 @@ class CameraManager:
                         cmd.extend(["--awbgains", gains])
 
                     subprocess.run(cmd, check=True)
-                    
+
                     if i < burst_count - 1:
                         time.sleep(interval)
 
@@ -128,3 +152,4 @@ class CameraManager:
             self.current_frame = 0
 
 cam_manager = CameraManager()
+
