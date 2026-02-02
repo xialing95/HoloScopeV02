@@ -163,7 +163,6 @@ class BurstRequest(BaseModel):
 async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
     cam_manager.stop_capture()
     time.sleep(0.5)
-    cam_manager._stop_event.clear()
     
     background_tasks.add_task(
         cam_manager.run_burst_sequence, 
