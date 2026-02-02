@@ -100,53 +100,65 @@ class CameraManager:
         self._stop_event.clear()
         self.is_bursting = True
 
-        base_path = f"/home/pi/HoloScopeV02/data/"
-        os.makedirs(base_path, exist_ok=True)
-
+        # Base data directory
+        base_data_path = "/home/pi/HoloScopeV02/data"
+        
         try:
             while not self._stop_event.is_set():
-                for i in range(burst_count):
-                    if self._stop_event.is_set():
-                        break
+                # 1. Create a unique folder for THIS specific burst
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                session_dir = os.path.join(base_data_path, f"{project_name}_{timestamp}")
+                os.makedirs(session_dir, exist_ok=True)
 
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = f"{base_path}/{project_name}_{timestamp}_{i:03d}.dng"
+                # 2. Generate the Log Sheet (Manifest)
+                log_path = os.path.join(session_dir, "metadata_log.txt")
+                with open(log_path, "w") as log:
+                    log.write(f"--- HOLOSCOPE SESSION LOG ---\n")
+                    log.write(f"Project: {project_name}\n")
+                    log.write(f"Timestamp: {timestamp}\n")
+                    log.write(f"Camera Model: {self.camera_model}\n")
+                    log.write(f"Settings: {self.settings}\n")
+                    log.write(f"Burst Count: {burst_count}\n")
+                    log.write(f"Interval: {interval}s\n")
+                    log.write(f"Burst Gap: {burst_gap}m\n")
+                    log.write(f"----------------------------\n")
 
-                    # DYNAMIC COMMAND BUILDING
-                    cmd = [
-                        "rpicam-still",
-                        "--shutter", str(self.settings["shutter"]),
-                        "--gain", str(self.settings["iso"] / 100), # Convert ISO to analog gain
-                        "--timeout", "1",
-                        "--immediate",
-                        "--raw",
-                        "--nopreview",
-                        "-o", filename
-                    ]
+                # 3. Build the rpicam-still command using --timelapse
+                # This keeps the camera process alive for the whole burst
+                filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
+                
+                cmd = [
+                    "rpicam-still",
+                    "--shutter", str(self.settings["shutter"]),
+                    "--gain", str(self.settings["iso"] / 100),
+                    "--timelapse", str(int(interval * 1000)), # Convert seconds to ms
+                    "--frames", str(burst_count),             # Exit after this many frames
+                    "--raw",                                  # Capture DNG
+                    "--nopreview",
+                    "-o", filename_pattern
+                ]
 
-                    # Inject AWB or Manual Gains
-                    if self.settings["awb_enabled"]:
-                        cmd.extend(["--awb", "auto"])
-                    else:
-                        gains = f"{self.settings['red_gain']},{self.settings['blue_gain']}"
-                        cmd.extend(["--awbgains", gains])
+                if self.settings["awb_enabled"]:
+                    cmd.extend(["--awb", "auto"])
+                else:
+                    gains = f"{self.settings['red_gain']},{self.settings['blue_gain']}"
+                    cmd.extend(["--awbgains", gains])
 
-                    subprocess.run(cmd, check=True)
+                # 4. Run the burst as a single process
+                print(f"Starting burst of {burst_count} images in {session_dir}")
+                subprocess.run(cmd, check=True)
 
-                    if i < burst_count - 1:
-                        time.sleep(interval)
-
-                if self._stop_event.is_set():
-                    break
-
-                # Responsive sleep for the burst gap
-                for _ in range(int(burst_gap * 60)):
-                    if self._stop_event.is_set(): break
-                    time.sleep(1)
-                self.is_bursting = True
+                # 5. Handle the Burst Gap (convert minutes to seconds)
+                if not self._stop_event.is_set():
+                    print(f"Burst complete. Waiting {burst_gap} minutes for next gap...")
+                    for _ in range(int(burst_gap * 60)):
+                        if self._stop_event.is_set(): break
+                        time.sleep(1)
+                
+        except Exception as e:
+            print(f"Burst error: {e}")
         finally:
             self.is_bursting = False
-            self.current_frame = 0
 
 cam_manager = CameraManager()
 

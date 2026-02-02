@@ -184,8 +184,18 @@ async def stop_burst():
 '''
 @app.get("/api/files")
 async def list_files():
-    files = sorted(os.listdir(PHOTO_DIR), reverse=True)
-    return [f for f in files if f.endswith(('.jpg', '.png', '.dng', '.csv'))]
+    all_files = []
+    # os.walk goes into every subfolder inside PHOTO_DIR
+    for root, dirs, files in os.walk(PHOTO_DIR):
+        for f in files:
+            if f.endswith(('.jpg', '.png', '.dng', '.csv', '.txt')):
+                # Get the path relative to PHOTO_DIR (e.g., "Project_123/image.dng")
+                relative_path = os.path.relpath(os.path.join(root, f), PHOTO_DIR)
+                all_files.append(relative_path)
+    
+    # Sort by newest first (using OS stats)
+    all_files.sort(key=lambda x: os.path.getmtime(os.path.join(PHOTO_DIR, x)), reverse=True)
+    return all_files
 
 @app.get("/api/download/{file_path:path}")
 async def download_file(file_path: str):
@@ -203,24 +213,24 @@ async def download_file(file_path: str):
     print(f"File not found: {full_path}")
     return {"error": f"File not found at {full_path}"}
 
-# --- Single endpoint for both individual file delete and delete-all ---
-@app.delete("/api/files/{filename}")
+@app.delete("/api/files/{filename:path}") # Added :path to handle subfolder slashes
 async def delete_file(filename: str):
-    # Handle special "delete-all" command
     if filename == "delete-all":
         try:
-            for f in os.listdir(PHOTO_DIR):
-                file_path = os.path.join(PHOTO_DIR, f)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-            return {"status": "success", "message": "All files deleted"}
+            # Recreate the directory to wipe everything including folders
+            shutil.rmtree(PHOTO_DIR)
+            os.makedirs(PHOTO_DIR, exist_ok=True)
+            return {"status": "success", "message": "All folders and files wiped"}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     
-    # Handle individual file deletion
-    file_path = os.path.join(PHOTO_DIR, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    # Handle individual file or folder deletion
+    full_path = os.path.join(PHOTO_DIR, filename)
+    if os.path.exists(full_path):
+        if os.path.isdir(full_path):
+            shutil.rmtree(full_path)
+        else:
+            os.remove(full_path)
         return {"status": "deleted"}
     raise HTTPException(status_code=404, detail="File not found")
 

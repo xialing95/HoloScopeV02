@@ -118,7 +118,8 @@ async function updateSensors() {
 
 /* ==========================================
    3. FILE MANAGEMENT (GALLERY)
-   ========================================== */
+========================================== */
+
 async function refreshFiles() {
     const fileList = document.getElementById('file-list');
     const refreshBtn = document.getElementById('refresh-btn');
@@ -128,38 +129,66 @@ async function refreshFiles() {
 
     try {
         const response = await fetch(`${API_BASE}/files`);
-        const files = await response.json();
+        const files = await response.json(); // Array of strings like "Folder_Name/file.dng"
 
-        // Clear current list
         fileList.innerHTML = '';
 
         if (files.length === 0) {
             fileList.innerHTML = '<p class="empty-msg">No images captured yet.</p>';
-        } else {
-            files.forEach(fileName => {
+            return;
+        }
+
+        // 1. Group files by their parent folder
+        const groups = {};
+        files.forEach(path => {
+            const parts = path.split('/');
+            const folderName = parts.length > 1 ? parts[0] : "Root";
+            if (!groups[folderName]) groups[folderName] = [];
+            groups[folderName].push(path);
+        });
+
+        // 2. Render Groups
+        for (const [folder, folderFiles] of Object.entries(groups)) {
+            const groupSection = document.createElement('div');
+            groupSection.className = 'folder-group';
+            
+            // Add a header for the folder with a "Delete Folder" option
+            groupSection.innerHTML = `
+                <div class="folder-header">
+                    <strong>📁 ${folder}</strong>
+                    ${folder !== "Root" ? `<button class="btn-text delete-btn" data-filename="${folder}">Delete Folder</button>` : ''}
+                </div>
+                <div class="folder-content"></div>
+            `;
+
+            const contentDiv = groupSection.querySelector('.folder-content');
+
+            folderFiles.forEach(fullPath => {
+                const shortName = fullPath.split('/').pop();
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
-                
-                // Extract just the name if it's a long path
-                const shortName = fileName.split('/').pop();
-                
                 fileItem.innerHTML = `
-                    <span class="file-name" title="${fileName}">${shortName}</span>
+                    <span class="file-name" title="${fullPath}">${shortName}</span>
                     <div class="file-actions">
-                        <a href="${API_BASE}/download/${fileName}" class="btn-small btn-green" download>↓</a>
-                        <button class="btn-small btn-red delete-btn" data-filename="${fileName}">×</button>
+                        <a href="${API_BASE}/download/${encodeURIComponent(fullPath)}" class="btn-small btn-green">↓</a>
+                        <button class="btn-small btn-red delete-btn" data-filename="${fullPath}">×</button>
                     </div>
                 `;
-                fileList.appendChild(fileItem);
+                contentDiv.appendChild(fileItem);
             });
-            // ATTACH LISTENERS: Link the new buttons to your deleteFile function
-            fileList.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const fname = btn.getAttribute('data-filename');
-                    deleteFile(fname); // Calling your existing function
-                });
-            });
+
+            fileList.appendChild(groupSection);
         }
+
+        // 3. Attach Listeners (Common for both folder and file buttons)
+        fileList.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                const fname = btn.getAttribute('data-filename');
+                deleteFile(fname);
+            };
+        });
+
     } catch (err) {
         notify("Failed to load gallery", "error");
         console.error(err);
@@ -170,36 +199,39 @@ async function refreshFiles() {
 }
 
 async function deleteFile(filename) {
+    // encodeURIComponent handles slashes in the filename for the URL
+    const safeName = encodeURIComponent(filename);
+    
     if (!confirm(`Permanently delete ${filename}?`)) return;
     
     try {
-        const res = await fetch(`${API_BASE}/files/${filename}`, { method: 'DELETE' });
+        const res = await fetch(`${API_BASE}/files/${safeName}`, { method: 'DELETE' });
         if (res.ok) {
-            notify(`Deleted ${filename}`, "success");
+            notify(`Deleted: ${filename}`, "success");
             refreshFiles();
         } else {
-            throw new Error("Delete failed on server");
+            const errorData = await res.json();
+            throw new Error(errorData.detail || "Delete failed");
         }
     } catch (err) {
         notify(`Error: ${err.message}`, "error");
     }
 }
 
+// Note: This still calls the same endpoint, but uses "delete-all" keyword
 async function deleteAllFiles() {
-    const confirmWipe = confirm("ARE YOU SURE? This will permanently delete EVERY file in the data folder.");
-    if (!confirmWipe) return;
+    if (!confirm("⚠️ DELETE EVERYTHING? This wipes all folders and files.")) return;
 
     try {
         const response = await fetch(`${API_BASE}/files/delete-all`, { method: 'DELETE' });
         if (response.ok) {
-            notify("Data folder cleared", "success");
-            refreshFiles(); // Update the UI
+            notify("System wiped", "success");
+            refreshFiles();
         }
     } catch (err) {
-        notify("Failed to clear folder", "error");
+        notify("Failed to clear system", "error");
     }
 }
-
 /* ==========================================
    4. CAMERA SETTINGS & LOGGING
    ========================================== */

@@ -318,6 +318,66 @@ button:disabled {
     padding: 5px;
 }
 
+.file-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fafafa;
+}
+
+/* Style for each Burst Folder block */
+.folder-group {
+    margin-bottom: 20px;
+    border: 1px solid #ccd;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* The blue/grey bar for the folder name */
+.folder-header {
+    background: #f0f4f8;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+/* The list of files inside that folder */
+.folder-content {
+    padding: 5px;
+}
+
+/* Individual file row */
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-bottom: 1px dotted #eee;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: #d9534f;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-decoration: underline;
+}
+
+.btn-text:hover {
+    color: #c9302c;
+}
+
 .file-row {
     display: flex;
     justify-content: space-between;
