@@ -132,7 +132,7 @@ class CameraManager:
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)), # Convert seconds to ms
-                    "--frames", str(burst_count),             # Exit after this many frames
+                    "--timeout", str(burst_count*int(interval * 1000)+500), # Total duration + buffer
                     "--raw",                                  # Capture DNG
                     "--nopreview",
                     "-o", filename_pattern
