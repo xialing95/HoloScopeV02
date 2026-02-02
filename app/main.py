@@ -2,13 +2,14 @@ import os
 import shutil
 import json
 import time
+import subprocess
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
 from network_manager import NetworkManager
 from camera_manager import cam_manager 
+from BME680_manager import sensors
 from pydantic import BaseModel
-
 
 app = FastAPI()
 
@@ -26,9 +27,6 @@ def get_settings():
     with open(SETTINGS_FILE, "r") as f:
         return json.load(f)
 
-# --- API ROUTES ---
-import subprocess
-from fastapi.responses import FileResponse
 '''
 ==========================================
    Preview Endpoint
@@ -74,6 +72,14 @@ async def get_preview():
     
 @app.post("/api/preview/start")
 async def start_preview_mode():
+    # Check if a burst is currently active
+    if cam_manager.is_bursting:
+        raise HTTPException(
+            status_code=409, 
+            detail="Camera is busy: Burst sequence is currently running."
+        )
+
+    # If not bursting, proceed with preview setup
     cam_manager._stop_event.clear()
     cam_manager.is_previewing = True
     print("Preview Mode re-enabled")
@@ -86,8 +92,10 @@ async def start_preview_mode():
 '''
 @app.get("/api/sensors")
 async def read_sensors():
-    # Mock data (On the Pi, we will replace this with real sensor code)
-    return {"temp": 22.5, "humidity": 45}
+    data = sensors.get_readings()
+    if not data:
+        raise HTTPException(status_code=503, detail="BME680 sensor busy or not responding")
+    return data
 
 ''' 
 ==========================================
