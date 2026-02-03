@@ -6,7 +6,7 @@ import subprocess
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
-from network_manager import NetworkManager
+from network_manager import net_manager
 from camera_manager import cam_manager 
 from BME680_manager import sensors
 from pydantic import BaseModel
@@ -320,18 +320,34 @@ class NetworkRequest(BaseModel):
 async def handle_network(request: NetworkRequest, background_tasks: BackgroundTasks):
     """Unified endpoint to switch between Hotspot and WiFi"""
     
-    # We use a background task so the 200 OK response 
-    # reaches your browser BEFORE the WiFi cuts out.
     if request.mode == "hotspot":
-        background_tasks.add_task( NetworkManager.switch_to_hotspot)
-        return {"status": "Success", "detail": "Switching to Hotspot..."}
+        # Update display immediately so you see the status while the Pi is working
+        display_manager.update_display(
+            status="Switching to AP...",
+            mode="NETWORK",
+            settings="Hotspot Mode"
+        )
+        
+        background_tasks.add_task(net_manager.switch_to_hotspot)
+        return {"status": "Success", "detail": "Switching to Hotspot. Check E-Ink for new IP."}
     
     elif request.mode == "wifi":
         if not request.ssid or not request.password:
             return {"status": "Error", "detail": "SSID and Password required for WiFi mode"}
         
-        background_tasks.add_task( NetworkManager.switch_to_wifi, request.ssid, request.password)
-        return {"status": "Success", "detail": f"Connecting to {request.ssid}..."}
+        display_manager.update_display(
+            status=f"Connecting...",
+            mode="NETWORK",
+            settings=f"SSID: {request.ssid}"
+        )
+        
+        # FIX: Use the instance 'network_manager'
+        background_tasks.add_task(
+            net_manager.switch_to_wifi, 
+            request.ssid, 
+            request.password
+        )
+        return {"status": "Success", "detail": f"Connecting to {request.ssid}. Check E-Ink for status."}
     
     return {"status": "Error", "detail": "Invalid mode"}
 
