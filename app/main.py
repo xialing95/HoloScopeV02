@@ -10,6 +10,7 @@ from network_manager import NetworkManager
 from camera_manager import cam_manager 
 from BME680_manager import sensors
 from pydantic import BaseModel
+from epdisplay_manager import display_manager
 
 app = FastAPI()
 
@@ -26,6 +27,13 @@ def get_settings():
         return {"project_name": "HoloScope", "time_interval": 5}
     with open(SETTINGS_FILE, "r") as f:
         return json.load(f)
+    
+# Initial Boot Screen
+display_manager.update_display(
+    status="Cam: Ready | BME: Ready",
+    mode="Idle",
+    settings="HoloScope V0.2"
+)
 
 '''
 ==========================================
