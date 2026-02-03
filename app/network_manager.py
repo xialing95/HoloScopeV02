@@ -1,6 +1,7 @@
 import subprocess
 import time
 import logging
+from epdisplay_manager import display_manager
 
 # Setup logging to see what's happening in the background
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,7 @@ class NetworkManager:
         logger.info("Transitioning to Hotspot mode...")
         # nmcli con up will automatically handle disconnecting from existing WiFi
         success, output = self._run_cmd(["sudo", "nmcli", "con", "up", self.hotspot_name])
+        display_manager.update_display()
         return success
 
     def switch_to_wifi(self, ssid, password):
@@ -43,6 +45,7 @@ class NetworkManager:
             
             if result.returncode == 0:
                 logger.info("WiFi Connected successfully!")
+                display_manager.update_display()
                 return True
             else:
                 raise Exception("WiFi auth failed")
@@ -62,7 +65,7 @@ class NetworkManager:
 
 # --- REQUIRED ONE-TIME SYSTEM SETUP ---
 # Run this function once or run the commands in your terminal to create the AP profile
-def setup_ap_profile(name="HoloScope_AP", password="holoscope123"):
+def setup_ap_profile(name="HoloScope_AP", password="fishystuff"):
     """
     Creates the persistent Hotspot profile in NetworkManager if it doesn't exist.
     """

@@ -406,7 +406,9 @@ async function handleStopPreview() {
     notify("Preview Stopped", "neutral");
 }
 
-// --- UTILITY: Update Health Indicators ---
+/* ==========================================
+   8. UPDATE STATUS MANAGEMENT
+   ========================================== */
 async function updateHealth() {
     try {
         const response = await fetch(`${API_BASE}/health`);
@@ -433,11 +435,28 @@ async function updateHealth() {
     }
 }
 
+// Function to trigger the E-Ink refresh and update the web UI health
+async function refreshEpdisplay() {
+    console.log("Refreshing system health and E-Ink display...");
+    
+    try {
+        // 1. Trigger the E-Ink hardware update
+        const displayResponse = await fetch('/api/update_epdisplay');
+        
+        console.log("System update complete. Next update in 2 minutes.");
+    } catch (error) {
+        console.error("Failed to refresh system status:", error);
+    }
+}
+
+
 // Start Polling
 setInterval(updateSensors, 2000);  
 setInterval(pollStatus, 2000); 
 setInterval(updateHealth, 5000);  // Update health every 5 seconds
+setInterval(refreshSystemStatus, 120000); // Refresh every 2 minutes
 // Run once on page load
 refreshFiles();
 updateHealth();
+refreshEpdisplay();
 

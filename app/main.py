@@ -32,7 +32,7 @@ def get_settings():
 display_manager.update_display(
     status="Cam: Ready | BME: Ready",
     mode="Idle",
-    settings="HoloScope V0.2"
+    settings="Ready to access web portal"
 )
 
 '''
@@ -77,6 +77,8 @@ async def get_preview():
         return FileResponse(preview_path)
     except subprocess.CalledProcessError:
         return {"error": "Camera capture failed"}
+    
+    
     
 @app.post("/api/preview/start")
 async def start_preview_mode():
@@ -133,6 +135,54 @@ async def get_health():
         "disk": f"{disk_used_gb}/{disk_total_gb}GB"
     }
 
+@app.get("/api/update_epdisplay")
+async def update_epdisplay():
+    import shutil
+    
+    # 1. Gather Camera & Mode Data
+    cam_info = cam_manager.get_camera_info()
+    is_busy = cam_manager.is_previewing or cam_manager.is_bursting
+    
+    # Define Line 2 (Status) and Line 3 (Mode)
+    status_str = "CAM: OK" if cam_info["connected"] else "CAM: FAIL"
+    
+    if cam_manager.is_bursting:
+        mode_str = "BURSTING"
+    elif cam_manager.is_previewing:
+        mode_str = "PREVIEW"
+    else:
+        mode_str = "IDLE"
+
+    # 2. Gather Sensor Data (BME680)
+    sensor_data = sensors.get_readings()
+    if sensor_data:
+        status_str += f" | {sensor_data['temp']}C"
+    else:
+        status_str += " | SEN: ERR"
+
+    # 3. Gather Disk Data for Line 4 (Settings/Data)
+    disk = shutil.disk_usage("/")
+    disk_used_gb = disk.used // (1024**3)
+    disk_total_gb = disk.total // (1024**3)
+    storage_str = f"Disk: {disk_used_gb}/{disk_total_gb}GB"
+
+    # 4. Check for Errors for Line 5
+    err_msg = ""
+    if not cam_info["connected"]:
+        err_msg = "No Camera!"
+    elif (disk.used / disk.total) > 0.90:
+        err_msg = "Disk 90% Full"
+
+    # Push to display
+    display_manager.update_display(
+        status=status_str,
+        mode=mode_str,
+        settings=storage_str,
+        error=err_msg
+    )
+    
+    return {"status": "Display Updated", "ip": display_manager.ip}
+
 ''' 
 ==========================================
    Camera Setting Management Endpoint
@@ -184,12 +234,18 @@ async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
         cam_manager.run_burst_sequence, 
         req.project_name, req.burst_count, req.interval, req.burst_gap
     )
+    display_manager.update_display(
+        settings="Burst sequence in progress..."
+    )
     return {"status": "success", "message": "Burst sequence started."}
 
 @app.post("/api/capture/stop")
 async def stop_burst():
     cam_manager.stop_capture()
     cam_manager.is_previewing = False
+    display_manager.update_display(
+        settings="Burst sequence stopped."
+    )
     return {"status": "success", "message": "Stop signal sent."}
 
 ''' 

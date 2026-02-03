@@ -84,7 +84,7 @@ class EPDisplayManager:
             draw_b.text((5, 42), f"MODE: {self.lines['mode']}", font=self.font_bold, fill=0)
 
             # Line 4: Settings
-            draw_b.text((5, 64), f"DATA: {self.lines['settings']}", font=self.font_small, fill=0)
+            draw_b.text((5, 64), f"Message: {self.lines['settings']}", font=self.font_small, fill=0)
 
             # Line 5: Error (RED Buffer)
             if self.lines["error"]:
