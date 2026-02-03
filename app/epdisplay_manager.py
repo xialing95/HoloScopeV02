@@ -1,6 +1,7 @@
 import os
 import socket
 import threading
+import time
 from PIL import Image, ImageDraw, ImageFont
 
 try:
@@ -10,13 +11,15 @@ except ImportError:
 
 class EPDisplayManager:
     def __init__(self):
-        # Get Hostname and IP instantly
         self.hostname = socket.gethostname()
-        self.ip = self.get_ip_fast()
+        self.lock = threading.Lock() 
         
-        self.lock = threading.Lock() # Prevent SPI collisions on the Pi Zero
+        # Initial data fetch
+        self.ip = self.get_ip_fast()
+        self.ssid = self.get_ssid_fast()
+        
         self.lines = {
-            "network": f"{self.hostname} | {self.ip}",
+            "network": f"{self.ssid} | {self.ip}", # Line 1 now includes SSID
             "status": "Initializing...",
             "mode": "BOOT",
             "settings": "-",
@@ -26,30 +29,40 @@ class EPDisplayManager:
         if epd2in13b_V4:
             self.epd = epd2in13b_V4.EPD()
         
-        # Pi Zero path for fonts
         font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         font_bold_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
         
         if os.path.exists(font_path):
-            self.font_small = ImageFont.truetype(font_path, 12)
+            self.font_small = ImageFont.truetype(font_path, 11) # Slightly smaller for more info
             self.font_bold = ImageFont.truetype(font_bold_path, 14)
         else:
             self.font_small = self.font_bold = ImageFont.load_default()
 
     def get_ip_fast(self):
-        """Zero-delay IP fetch using hostname command."""
         try:
-            # -I returns all IP addresses associated with the hostname
             ips = os.popen('hostname -I').read().strip()
             return ips.split()[0] if ips else "No IP"
         except:
             return "127.0.0.1"
 
+    def get_ssid_fast(self):
+        """Quickly fetch the current SSID."""
+        try:
+            # -r returns just the SSID name
+            ssid = os.popen('iwgetid -r').read().strip()
+            return ssid if ssid else "No WiFi"
+        except:
+            return "Unknown"
+
     def update_display(self, status=None, mode=None, settings=None, error=""):
-        """Call this to push new data to the E-Ink."""
         with self.lock:
-            # Always refresh IP in case it changed
-            self.lines["network"] = f"{self.hostname} | {self.get_ip_fast()}"
+            # Refresh Network Stats
+            self.ip = self.get_ip_fast()
+            self.ssid = self.get_ssid_fast()
+            
+            # Formatting Line 1: SSID | IP (Host is removed to save space)
+            self.lines["network"] = f"{self.ssid} | {self.ip}"
+            
             if status: self.lines["status"] = status
             if mode: self.lines["mode"] = mode.upper()
             if settings: self.lines["settings"] = settings
@@ -64,8 +77,6 @@ class EPDisplayManager:
 
         try:
             self.epd.init()
-            # EPD 2.13b V4 is 250x122. We use it in Landscape.
-            # 255 is WHITE
             img_b = Image.new('1', (self.epd.height, self.epd.width), 255)
             img_r = Image.new('1', (self.epd.height, self.epd.width), 255)
             
@@ -73,9 +84,9 @@ class EPDisplayManager:
             draw_r = ImageDraw.Draw(img_r)
 
             # --- Layout ---
-            # Line 1: Header (Inverted for visibility)
+            # Line 1: Header (SSID and IP)
             draw_b.rectangle((0, 0, 250, 18), fill=0)
-            draw_b.text((5, 1), self.lines["network"], font=self.font_small, fill=1)
+            draw_b.text((5, 2), self.lines["network"], font=self.font_small, fill=1)
 
             # Line 2: Status
             draw_b.text((5, 22), f"SYS: {self.lines['status']}", font=self.font_small, fill=0)
@@ -83,15 +94,14 @@ class EPDisplayManager:
             # Line 3: Mode
             draw_b.text((5, 42), f"MODE: {self.lines['mode']}", font=self.font_bold, fill=0)
 
-            # Line 4: Settings
-            draw_b.text((5, 64), f"Message: {self.lines['settings']}", font=self.font_small, fill=0)
+            # Line 4: Settings/Message
+            draw_b.text((5, 64), f"MSG: {self.lines['settings']}", font=self.font_small, fill=0)
 
             # Line 5: Error (RED Buffer)
             if self.lines["error"]:
                 draw_r.text((5, 88), f"ERR: {self.lines['error']}", font=self.font_small, fill=0)
-                draw_r.rectangle((2, 85, 248, 118), outline=0) # Red box around error
+                draw_r.rectangle((2, 85, 248, 118), outline=0)
 
-            # Push to hardware
             self.epd.display(self.epd.getbuffer(img_b), self.epd.getbuffer(img_r))
             self.epd.sleep()
         except Exception as e:
