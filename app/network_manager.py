@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NetworkManager")
 
 class NetworkManager:
-    def __init__(self, hotspot_name="HoloScope_AP"):
+    def __init__(self, hotspot_name="HoloScopeAP"):
         self.hotspot_name = hotspot_name
         self.interface = "wlan0"
 
@@ -65,7 +65,7 @@ class NetworkManager:
 
 # --- REQUIRED ONE-TIME SYSTEM SETUP ---
 # Run this function once or run the commands in your terminal to create the AP profile
-def setup_ap_profile(name="HoloScope_AP", password="fishystuff"):
+def setup_ap_profile(name="HoloScopeAP", password="fishystuff"):
     """
     Creates the persistent Hotspot profile in NetworkManager if it doesn't exist.
     """
