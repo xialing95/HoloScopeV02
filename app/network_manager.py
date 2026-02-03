@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NetworkManager")
 
 class NetworkManager:
-    def __init__(self, hotspot_name="HoloScopeAP"):
+    def __init__(self, hotspot_name="HoloscopeAP"):
         self.hotspot_name = hotspot_name
         self.interface = "wlan0"
 
@@ -67,7 +67,7 @@ class NetworkManager:
         return "Unknown"
 
 # --- SYSTEM SETUP ---
-def setup_ap_profile(name="HoloScopeAP", password="fishystuff"):
+def setup_ap_profile(name="HoloscopeAP", password="fishystuff"):
     """Run once to create the AP profile in NetworkManager."""
     cmd = [
         "sudo", "nmcli", "con", "add", "type", "wifi", "ifname", "wlan0", 
