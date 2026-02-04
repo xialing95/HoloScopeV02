@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('delete-all-btn', deleteAllFiles);
 
     // 6. Sensor Management
-    listen('save-log-btn',handleSensorLogStart);
+    listen('start-log-btn', toggleSensorLogging(true));
+    listen('stop-log-btn', toggleSensorLogging(false));
 
     // 7. Network
     listen('wifi-btn', () => handleNetworkUpdate('wifi'));
@@ -119,35 +120,58 @@ async function updateSensors() {
     }
 }
 
-async function handleSensorLogStart() {
+// Function to handle both Start and Stop actions
+async function toggleSensorLogging(shouldEnable) {
     const logIntervalInput = document.getElementById('log-interval');
-    const logEnabledCheckbox = document.getElementById('log-enabled');
-    const saveLogBtn = document.getElementById('save-log-btn');
-    
+    const startBtn = document.getElementById('start-log-btn');
+    const stopBtn = document.getElementById('stop-log-btn');
+    const statusText = document.getElementById('log-status-text');
+
+    // 1. Get and validate interval
+    const intervalValue = parseInt(logIntervalInput.value);
+    if (shouldEnable && (isNaN(intervalValue) || intervalValue < 1)) {
+        alert("Please enter a valid interval (minimum 1 second).");
+        return;
+    }
+
     const payload = {
-            interval: parseInt(logIntervalInput.value),
-            enabled: logEnabledCheckbox.checked
-        };
-
-        try {
-            const response = await fetch('/api/sensors/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                alert(`Logging ${payload.enabled ? 'Started' : 'Stopped'} (Interval: ${payload.interval}s)`);
-                saveLogBtn.classList.replace('btn-blue', 'btn-green');
-                setTimeout(() => saveLogBtn.classList.replace('btn-green', 'btn-blue'), 2000);
-            } else {
-                throw new Error('Failed to update config');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Could not update sensor logging.');
-        }
+        interval: intervalValue || 60, // Default to 60 if stopped
+        enabled: shouldEnable
     };
+
+    try {
+        const response = await fetch('/api/sensors/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            // 2. Update UI State
+            if (shouldEnable) {
+                statusText.innerText = "ACTIVE";
+                statusText.style.color = "#28a745"; // Green
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                startBtn.classList.add('opacity-50');
+                stopBtn.classList.remove('opacity-50');
+            } else {
+                statusText.innerText = "STOPPED";
+                statusText.style.color = "#dc3545"; // Red
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                startBtn.classList.remove('opacity-50');
+                stopBtn.classList.add('opacity-50');
+            }
+            console.log(`Logging ${shouldEnable ? 'started' : 'stopped'}.`);
+        } else {
+            throw new Error('Server responded with an error');
+        }
+    } catch (error) {
+        console.error('API Error:', error);
+        alert('Failed to update logging. Is the HoloScope service running?');
+    }
+}
 
 /* ==========================================
    3. FILE MANAGEMENT (GALLERY)
@@ -498,7 +522,7 @@ async function refreshEpdisplay() {
 setInterval(updateSensors, 2000);  
 setInterval(pollStatus, 2000); 
 setInterval(updateHealth, 5000);  // Update health every 5 seconds
-setInterval(refreshSystemStatus, 120000); // Refresh every 2 minutes
+// setInterval(refreshEpdisplay, 120000); // Refresh every 2 minutes
 // Run once on page load
 refreshFiles();
 updateHealth();

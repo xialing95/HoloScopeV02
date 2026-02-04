@@ -102,14 +102,17 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h3>Environmental Logging Config</h3>
-                <label>Log Interval (Sec): <input type="number" id="log-interval" value="60"></label>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="log-enabled"> Enable Data Logging (.csv)
-                </label>
-                <button id="save-log-btn" class="btn-blue">Update Logging</button>
+        <div class="card">
+            <h3>Environmental Logging Config</h3>
+            <p>Status: <span id="log-status-text" style="color: red; font-weight: bold;">STOPPED</span></p>
+            
+            <label>Log Interval (Sec): <input type="number" id="log-interval" value="60"></label>
+            
+            <div class="button-group" style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="start-log-btn" class="btn-green" style="flex: 1;">Start Logging</button>
+                <button id="stop-log-btn" class="btn-red" style="flex: 1;">Stop Logging</button>
             </div>
+        </div>
 
         <div class="card">
             <h3>Files & Storage</h3>
