@@ -96,44 +96,40 @@ class CameraManager:
         # Force kill any hanging camera processes to free the hardware
         os.system("pkill -9 rpicam-still")
 
-    def run_burst_sequence(self, project_name, burst_count, interval, burst_gap):
+    def run_burst_sequence(self, project_name, burst_count, interval, burst_gap, total_duration):
         self._stop_event.clear()
         self.is_bursting = True
 
-        # Base data directory
+        # Calculate when we should stop (now + hours)
+        end_time = datetime.now() + timedelta(hours=total_duration)
         base_data_path = "/home/pi/HoloScopeV02/data"
         
         try:
-            while not self._stop_event.is_set():
-                # 1. Create a unique folder for THIS specific burst
+            # Loop runs until stop button is pressed OR time runs out
+            while not self._stop_event.is_set() and datetime.now() < end_time:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 session_dir = os.path.join(base_data_path, f"{project_name}_{timestamp}")
                 os.makedirs(session_dir, exist_ok=True)
 
-                # 2. Generate the Log Sheet (Manifest)
+                # Metadata Logging (updated to include total duration)
                 log_path = os.path.join(session_dir, "metadata_log.txt")
                 with open(log_path, "w") as log:
                     log.write(f"--- HOLOSCOPE SESSION LOG ---\n")
                     log.write(f"Project: {project_name}\n")
-                    log.write(f"Timestamp: {timestamp}\n")
-                    log.write(f"Camera Model: {self.camera_model}\n")
-                    log.write(f"Settings: {self.settings}\n")
+                    log.write(f"End Time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                     log.write(f"Burst Count: {burst_count}\n")
-                    log.write(f"Interval: {interval}s\n")
                     log.write(f"Burst Gap: {burst_gap}m\n")
                     log.write(f"----------------------------\n")
 
-                # 3. Build the rpicam-still command using --timelapse
-                # This keeps the camera process alive for the whole burst
+                # Build the rpicam-still command
                 filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
-                
                 cmd = [
                     "rpicam-still",
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
-                    "--timelapse", str(int(interval * 1000)), # Convert seconds to ms
-                    "--timeout", str(burst_count*int(interval * 1000)+500), # Total duration + buffer
-                    "--raw",                                  # Capture DNG
+                    "--timelapse", str(int(interval * 1000)),
+                    "--timeout", str(burst_count * int(interval * 1000) + 500),
+                    "--raw",
                     "--nopreview",
                     "-o", filename_pattern
                 ]
@@ -144,21 +140,23 @@ class CameraManager:
                     gains = f"{self.settings['red_gain']},{self.settings['blue_gain']}"
                     cmd.extend(["--awbgains", gains])
 
-                # 4. Run the burst as a single process
-                print(f"Starting burst of {burst_count} images in {session_dir}")
+                print(f"Starting burst in {session_dir}. Ends at {end_time.strftime('%H:%M')}")
                 subprocess.run(cmd, check=True)
 
-                # 5. Handle the Burst Gap (convert minutes to seconds)
+                # Handle the Burst Gap
                 if not self._stop_event.is_set():
-                    print(f"Burst complete. Waiting {burst_gap} minutes for next gap...")
+                    print(f"Waiting {burst_gap} minutes...")
                     for _ in range(int(burst_gap * 60)):
-                        if self._stop_event.is_set(): break
+                        # Check stop event OR if we passed the end_time during the sleep
+                        if self._stop_event.is_set() or datetime.now() >= end_time: 
+                            break
                         time.sleep(1)
                 
         except Exception as e:
             print(f"Burst error: {e}")
         finally:
             self.is_bursting = False
+            print("Burst sequence complete.")
 
 cam_manager = CameraManager()
 

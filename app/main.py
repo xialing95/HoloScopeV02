@@ -224,18 +224,20 @@ class BurstRequest(BaseModel):
     burst_count: int
     interval: int
     burst_gap: int
+    total_duration: int  
 
 @app.post("/api/capture/burst")
 async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
     cam_manager.stop_capture()
     time.sleep(0.5)
     
+    # Pass total_duration to the manager
     background_tasks.add_task(
         cam_manager.run_burst_sequence, 
-        req.project_name, req.burst_count, req.interval, req.burst_gap
+        req.project_name, req.burst_count, req.interval, req.burst_gap, req.total_duration
     )
     display_manager.update_display(
-        settings="Burst sequence in progress..."
+        settings=f"Bursting: {req.total_duration}h plan"
     )
     return {"status": "success", "message": "Burst sequence started."}
 

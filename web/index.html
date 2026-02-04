@@ -46,6 +46,12 @@
                 <label>Timelapse (Sec): <input type="number" id="time-interval" value="5" min="2"></label>
                 <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10" min="1"></label>
                 
+                <label>Total Duration (Hours): <input type="number" id="total-duration" value="2" min="1"></label>
+
+                <div class="calculation-preview" style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    <p>Estimated Bursts: <span id="est-bursts">12</span></p>
+                </div>
+                
                 <div class="button-group">
                     <button id="burst-btn" class="btn-green">Start Capture</button>
                     <button id="stop-btn" class="btn-red">Stop Capture</button>
