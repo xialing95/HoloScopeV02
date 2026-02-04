@@ -94,8 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('delete-all-btn', deleteAllFiles);
 
     // 6. Sensor Management
-    listen('start-log-btn', toggleSensorLogging(true));
-    listen('stop-log-btn', toggleSensorLogging(false));
+    listen('start-log-btn', startSensorLogging);
+    listen('stop-log-btn', stopSensorLogging);
 
     // 7. Network
     listen('wifi-btn', () => handleNetworkUpdate('wifi'));
@@ -120,56 +120,62 @@ async function updateSensors() {
     }
 }
 
-// Function to handle both Start and Stop actions
-async function toggleSensorLogging(shouldEnable) {
+// --- SENSOR START FUNCTION ---
+async function startSensorLogging() {
     const logIntervalInput = document.getElementById('log-interval');
     const startBtn = document.getElementById('start-log-btn');
     const stopBtn = document.getElementById('stop-log-btn');
     const statusText = document.getElementById('log-status-text');
 
-    // 1. Get and validate interval
     const intervalValue = parseInt(logIntervalInput.value);
-    if (shouldEnable && (isNaN(intervalValue) || intervalValue < 1)) {
+    
+    // Validation
+    if (isNaN(intervalValue) || intervalValue < 1) {
         alert("Please enter a valid interval (minimum 1 second).");
         return;
     }
-
-    const payload = {
-        interval: intervalValue || 60, // Default to 60 if stopped
-        enabled: shouldEnable
-    };
 
     try {
         const response = await fetch('/api/sensors/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ interval: intervalValue, enabled: true })
         });
 
         if (response.ok) {
-            // 2. Update UI State
-            if (shouldEnable) {
-                statusText.innerText = "ACTIVE";
-                statusText.style.color = "#28a745"; // Green
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                startBtn.classList.add('opacity-50');
-                stopBtn.classList.remove('opacity-50');
-            } else {
-                statusText.innerText = "STOPPED";
-                statusText.style.color = "#dc3545"; // Red
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-                startBtn.classList.remove('opacity-50');
-                stopBtn.classList.add('opacity-50');
-            }
-            console.log(`Logging ${shouldEnable ? 'started' : 'stopped'}.`);
-        } else {
-            throw new Error('Server responded with an error');
+            statusText.innerText = "ACTIVE";
+            statusText.style.color = "#28a745";
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            console.log("Logging started.");
         }
     } catch (error) {
-        console.error('API Error:', error);
-        alert('Failed to update logging. Is the HoloScope service running?');
+        console.error('Start Log Error:', error);
+    }
+}
+
+// --- SENSOR STOP FUNCTION ---
+async function stopSensorLogging() {
+    const startBtn = document.getElementById('start-log-btn');
+    const stopBtn = document.getElementById('stop-log-btn');
+    const statusText = document.getElementById('log-status-text');
+
+    try {
+        const response = await fetch('/api/sensors/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interval: 60, enabled: false }) // Interval doesn't matter for stop
+        });
+
+        if (response.ok) {
+            statusText.innerText = "STOPPED";
+            statusText.style.color = "#dc3545";
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            console.log("Logging stopped.");
+        }
+    } catch (error) {
+        console.error('Stop Log Error:', error);
     }
 }
 
