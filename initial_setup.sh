@@ -104,6 +104,10 @@ EOF
 
 sudo systemctl daemon-reload
 sudo systemctl enable holoscope.service
+# Ensure Nginx can traverse the pi home directory
+sudo chmod +x /home/pi
+# Ensure the web folder is readable
+sudo chmod -R 755 /home/pi/HoloScopeV02
 
 echo "------------------------------------------------"
 echo "Installation Complete!"
