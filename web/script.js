@@ -9,6 +9,36 @@ const API_BASE = "/api";
  * @param {string} type - 'neutral', 'success', or 'error'
  */
 
+function updateTrackingText(state) {
+    const bar = document.getElementById('system-status-bar');
+    const msg = document.getElementById('status-message');
+
+    if (!bar || !msg) return;
+
+    // Save the state globally so notify() can restore it after a timeout
+    window.currentCameraState = state;
+
+    // Mapping states to user-friendly text and CSS classes
+    const stateMap = {
+        'idle':      { text: "HoloScope Ready",      class: "status-ready" },
+        'preview':   { text: "Live Preview Active",  class: "status-preview" },
+        'recording': { text: "Recording Video...",   class: "status-recording" },
+        'burst':     { text: "Burst Capture Active", class: "status-burst" },
+        'busy':      { text: "Processing Data...",   class: "status-busy" },
+        'logging':   { text: "Logging Sensors...",   class: "status-logging" }
+    };
+
+    // Get configuration based on state, default to idle if state is unknown
+    const config = stateMap[state] || stateMap['idle'];
+
+    // Update the UI
+    msg.innerText = config.text;
+    bar.className = ''; // Clear existing status classes
+    bar.classList.add(config.class);
+
+    console.log(`System State Change: ${state}`);
+}
+
 function notify(message, type = 'neutral') {
     const bar = document.getElementById('system-status-bar');
     const msg = document.getElementById('status-message');
