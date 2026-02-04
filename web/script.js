@@ -318,16 +318,15 @@ async function handleBurstStart() {
         burst_count: parseInt(document.getElementById('burst-count').value),
         interval: parseInt(document.getElementById('time-interval').value),
         burst_gap: parseInt(document.getElementById('burst-gap').value),
-        // Added the total duration field (converting to int for the API)
-        total_duration: parseInt(document.getElementById('total-duration').value)
+        total_duration: parseFloat(document.getElementById('total-duration').value)
     };
 
     // Validations
     if (!payload.project_name) return notify("Name required!", "error");
     if (payload.interval < 2) return notify("Min interval is 2s", "error");
     if (!payload.burst_count) return notify("Number of photos required!", "error");
-    if (!payload.total_duration || payload.total_duration < 1) {
-        return notify("Duration must be at least 1 hour", "error");
+    if (!payload.total_duration || payload.total_duration < 0.015) {
+        return notify("Duration must be at least 1 min", "error");
     }
 
     notify(`Project ${payload.project_name} started...`, "success");

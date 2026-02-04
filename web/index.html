@@ -46,7 +46,9 @@
                 <label>Timelapse (Sec): <input type="number" id="time-interval" value="5" min="2"></label>
                 <label>Burst Gap (Min): <input type="number" id="burst-gap" value="10" min="1"></label>
                 
-                <label>Total Duration (Hours): <input type="number" id="total-duration" value="2" min="1"></label>
+                <label>Total Duration (Hours): 
+                    <input type="number" id="total-duration" value="0.5" min="0.015" step="0.01">
+                </label>
 
                 <div class="calculation-preview" style="margin-top: 10px; font-size: 0.9em; color: #666;">
                     <p>Estimated Bursts: <span id="est-bursts">12</span></p>

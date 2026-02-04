@@ -224,7 +224,7 @@ class BurstRequest(BaseModel):
     burst_count: int
     interval: int
     burst_gap: int
-    total_duration: int  
+    total_duration: float  
 
 @app.post("/api/capture/burst")
 async def start_burst(req: BurstRequest, background_tasks: BackgroundTasks):
