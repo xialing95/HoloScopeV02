@@ -76,7 +76,10 @@ sudo chmod +x /home/pi
 sudo chmod -R 755 /home/pi/HoloScopeV02
 sudo systemctl restart nginx
 
-# 8. Systemd Service (CREATED ONLY - NOT STARTED)
+echo "🔓 Allowing pi user to manage network without password..."
+echo "pi ALL=(ALL) NOPASSWD: /usr/bin/nmcli" | sudo tee /etc/sudoers.d/holoscope-nmcli
+
+# 8. Systemd Service 
 echo "🔄 Preparing HoloScope Systemd Service file..."
 sudo bash -c "cat > /etc/systemd/system/holoscope.service" <<EOF
 [Unit]
@@ -93,12 +96,13 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# Reloading so the system sees the file, but NOT enabling/starting.
+echo "🔄 Enabling and Starting HoloScope Systemd Service..."
 sudo systemctl daemon-reload
-
-echo "✅ Installation Complete!"
-echo "📡 Dashboard will be at: http://$(hostname -I | awk '{print $1}')"
-echo "💡 The systemd service is prepared but NOT started."
-echo "⚠️  Please run 'sudo reboot' now."
 sudo systemctl enable holoscope.service
 sudo systemctl start holoscope.service
+
+echo "------------------------------------------------"
+echo "✅ Installation Complete!"
+echo "📡 Dashboard will be at: http://$(hostname -I | awk '{print $1}')"
+echo "💡 Service is ACTIVE. Monitor logs with: journalctl -u holoscope -f"
+echo "⚠️  It is recommended to run 'sudo reboot' to finalize hardware interfaces."
