@@ -3,15 +3,16 @@ import shutil
 import json
 import time
 import subprocess
+import threading
+
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
-from typing import List
+from pydantic import BaseModel
+
 from network_manager import net_manager
 from camera_manager import cam_manager 
 from BME680_manager import sensors
-from pydantic import BaseModel
 from epdisplay_manager import display_manager
-from threading import Thread
 
 app = FastAPI()
 
