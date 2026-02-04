@@ -24,51 +24,57 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    /* Remove fixed height to prevent clipping */
-    height: auto; 
+    height: auto;
+    min-height: 50px;
     z-index: 1000;
 
     display: flex;
-    flex-direction: column; /* Stacks content vs indicators */
-    gap: 8px;
+    flex-direction: row;        /* Side-by-side layout */
+    justify-content: space-between; /* Pushes info left, health right */
+    align-items: flex-start;    /* Aligns both groups to the top */
 
     background-color: #ffffff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    border-bottom: 1px solid #e0e0e0;
-    padding: 10px 15px;
-    box-sizing: border-box; /* Ensures padding doesn't cause overflow */
+    padding: 8px 12px;
+    box-sizing: border-box;
 }
 
-/* Container for System Message and Camera Tracker */
-.status-content {
+/* Left Side Group */
+.status-info {
     display: flex;
-    flex-direction: column; /* Stack the system message and the [IDLE] tracker */
+    flex-direction: column;
     gap: 4px;
-    width: 100%;
+    flex: 1;                    /* Takes up remaining space */
+    min-width: 0;               /* Prevents blowout */
 }
 
-.status-line {
+/* Right Side Group */
+.health-indicators {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+    flex-direction: column;     /* Stacks pills vertically on the right */
+    align-items: flex-end;      /* Aligns text to the right edge */
+    gap: 2px;
+    padding-left: 10px;         /* Buffer from the status text */
+    flex-shrink: 0;             /* Prevents the pills from squishing */
 }
 
-#status-message {
+.health-pill {
+    font-family: monospace;
+    font-size: 0.6rem;
     font-weight: 700;
-    word-break: break-word; /* Wrap text if the project name is very long */
+    color: #666;
+    white-space: nowrap;        /* Keeps "DISK: 10%" on one line */
 }
 
 #camera-tracker {
     font-family: monospace;
-    font-size: 0.7rem;
-    color: #555;
+    font-size: 0.65rem;
+    color: #444;
     background: #f0f0f0;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 1px 5px;
+    border-radius: 3px;
     width: fit-content;
 }
-
 /* Health Indicators Stacked */
 .health-indicators {
     display: flex;
