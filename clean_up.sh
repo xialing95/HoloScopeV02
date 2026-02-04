@@ -1,11 +1,11 @@
 # 1. Stop the running service
-sudo systemctl stop holoscope.service
+sudo systemctl stop holo-scope.service
 
 # 2. Prevent it from starting on boot
-sudo systemctl disable holoscope.service
+sudo systemctl disable holo-scope.service
 
 # 3. Remove the service file itself
-sudo rm /etc/systemd/system/holo_scope.service
+sudo rm /etc/systemd/system/holo-scope.service
 
 # 4. Reload the manager to "forget" the service exists
 sudo systemctl daemon-reload
