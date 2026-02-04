@@ -27,51 +27,29 @@ body {
 /* ==========================================
    2. SYSTEM STATUS BAR (Compact & Fixed)
    ========================================= */
-#system-status-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 44px;
-    z-index: 1000;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-
-    font-weight: 600;
-    font-size: 0.7rem;
-    letter-spacing: 0.3px;
-
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    border-bottom: 1px solid #e0e0e0;
-    padding: 0 10px;
-    overflow: hidden;
-}
-
 .status-content {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-shrink: 1;
-    min-width: 0;
-}
-
-#status-label {
-    background: rgba(0, 0, 0, 0.08);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 0.65rem;
+    flex: 1;          /* Allow this container to take up available space */
+    min-width: 0;     /* Critical for text-overflow to work in flexbox */
 }
 
 #status-message {
     font-weight: 700;
-    max-width: 100px;
+    flex: 1;          /* Grow to fill space */
+    min-width: 0;     /* Allow it to shrink if needed */
+    
+    /* Remove the fixed 100px width */
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+}
+
+#system-status-bar {
+    /* ... existing code ... */
+    padding: 0 10px;
+    box-sizing: border-box; /* Ensures padding doesn't push width past 100% */
 }
 
 #camera-tracker {
