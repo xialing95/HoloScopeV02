@@ -11,6 +11,7 @@ from camera_manager import cam_manager
 from BME680_manager import sensors
 from pydantic import BaseModel
 from epdisplay_manager import display_manager
+from threading import Thread
 
 app = FastAPI()
 
@@ -100,12 +101,33 @@ async def start_preview_mode():
    Sensors Endpoint
 ========================================== 
 '''
+class LogConfig(BaseModel):
+    interval: int  # Accepts any integer
+    enabled: bool
+
+class SensorSettings(BaseModel):
+    temp_offset: float = -2.5  # Calibration for board heat
+    # You can add humidity_offset or pressure_calibration here later
+
 @app.get("/api/sensors")
 async def read_sensors():
     data = sensors.get_readings()
     if not data:
         raise HTTPException(status_code=503, detail="BME680 sensor busy or not responding")
     return data
+
+@app.post("/api/sensors/config")
+async def config_sensors(config: LogConfig):
+    sensors.log_interval = config.interval
+    
+    if config.enabled:
+        if not sensors.log_enabled:
+            sensors.log_enabled = True
+            threading.Thread(target=sensors._logging_worker, daemon=True).start()
+    else:
+        sensors.log_enabled = False
+        
+    return {"enabled": sensors.log_enabled, "interval": sensors.log_interval}
 
 ''' 
 ==========================================

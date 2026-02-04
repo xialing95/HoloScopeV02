@@ -93,7 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('refresh-btn', refreshFiles);
     listen('delete-all-btn', deleteAllFiles);
 
-    // 6. Network
+    // 6. Sensor Management
+    listen('save-log-btn',handleSensorLogStart);
+
+    // 7. Network
     listen('wifi-btn', () => handleNetworkUpdate('wifi'));
     listen('hotspot-btn', () => handleNetworkUpdate('hotspot'));
 });
@@ -115,6 +118,36 @@ async function updateSensors() {
         console.warn("Sensor poll failed:", err);
     }
 }
+
+async function handleSensorLogStart() {
+    const logIntervalInput = document.getElementById('log-interval');
+    const logEnabledCheckbox = document.getElementById('log-enabled');
+    const saveLogBtn = document.getElementById('save-log-btn');
+    
+    const payload = {
+            interval: parseInt(logIntervalInput.value),
+            enabled: logEnabledCheckbox.checked
+        };
+
+        try {
+            const response = await fetch('/api/sensors/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert(`Logging ${payload.enabled ? 'Started' : 'Stopped'} (Interval: ${payload.interval}s)`);
+                saveLogBtn.classList.replace('btn-blue', 'btn-green');
+                setTimeout(() => saveLogBtn.classList.replace('btn-green', 'btn-blue'), 2000);
+            } else {
+                throw new Error('Failed to update config');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Could not update sensor logging.');
+        }
+    };
 
 /* ==========================================
    3. FILE MANAGEMENT (GALLERY)
