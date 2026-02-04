@@ -100,3 +100,5 @@ echo "✅ Installation Complete!"
 echo "📡 Dashboard will be at: http://$(hostname -I | awk '{print $1}')"
 echo "💡 The systemd service is prepared but NOT started."
 echo "⚠️  Please run 'sudo reboot' now."
+sudo systemctl enable holoscope.service
+sudo systemctl start holoscope.service

@@ -35,10 +35,9 @@ class NetworkManager:
                     if line.startswith('Serial'):
                         return line.strip()[-4:]
         except:
-            return "XXXX" # Fallback if serial can't be read
+            return "XXXX" # Fallback if serial can't be read 
 
-    def ensure_hotspot_exists(self, password="holoscope_pass"):
-        """Creates the profile using the unique SSID."""
+    def ensure_hotspot_exists(self, password="fishystuff"):
         success, _ = self._run_cmd(["nmcli", "con", "show", self.hotspot_name])
         
         if not success:
