@@ -416,7 +416,7 @@ button:disabled {
    7. DESKTOP ADAPTATION (900px+)
    ========================================== */
 @media (min-width: 900px) {
-    body { padding: 40px; }
+    body { padding: 120px; }
 
     .grid-container {
         display: grid;

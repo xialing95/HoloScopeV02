@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # HoloScope V0.2 Environment Setup Script
-echo "🚀 Starting HoloScope Installation..."
+echo "Starting HoloScope Installation..."
 
 # 1. Update & Dependencies
-echo "📦 Installing System Dependencies..."
+echo "Installing System Dependencies..."
 sudo apt update && sudo apt install -y python3-pip python3-venv nginx libcamera-dev gpiod network-manager
 
 # 2. Virtual Environment Setup
@@ -15,7 +15,7 @@ fi
 source venv/bin/activate
 
 # 3. Python Libraries
-echo "🐍 Installing Python packages..."
+echo "Installing Python packages..."
 pip install --upgrade pip
 pip install fastapi uvicorn adafruit-blinka RPi.GPIO board \
             adafruit-circuitpython-dht adafruit-circuitpython-bme280
@@ -58,7 +58,7 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo systemctl restart nginx
 
 # 6. Network Permissions
-echo "🔓 Configuring Network Permissions..."
+echo "Configuring Network Permissions..."
 echo "pi ALL=(ALL) NOPASSWD: /usr/bin/nmcli" | sudo tee /etc/sudoers.d/holoscope-nmcli
 
 # 7. Create the Auto-Hotspot Script
@@ -69,9 +69,9 @@ cat > autohotspot.sh <<EOF
 sleep 15
 
 if nmcli -t -f DEVICE,STATE dev | grep -q "wlan0:connected"; then
-    echo "✅ Connected to WiFi."
+    echo "Connected to WiFi."
 else
-    echo "❌ No WiFi. Starting HoloScope Hotspot..."
+    echo "No WiFi. Starting HoloScope Hotspot..."
     SERIAL=\$(grep "Serial" /proc/cpuinfo | awk '{print \$3}' | tail -c 5)
     SSID="HoloScope-\${SERIAL:-XXXX}"
     
@@ -84,7 +84,7 @@ EOF
 chmod +x autohotspot.sh
 
 # 8. Systemd Service Configuration
-echo "🔄 Configuring Systemd Service..."
+echo "Configuring Systemd Service..."
 sudo bash -c "cat > /etc/systemd/system/holoscope.service" <<EOF
 [Unit]
 Description=HoloScope FastAPI Backend
@@ -106,7 +106,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable holoscope.service
 
 echo "------------------------------------------------"
-echo "✅ Installation Complete!"
-echo "💡 At boot: If no WiFi is found, a hotspot named 'HoloScope-XXXX' will start."
-echo "🔗 Hotspot Dashboard: http://192.168.4.1"
-echo "⚠️  Please run 'sudo reboot' now."
+echo "Installation Complete!"
+echo "At boot: If no WiFi is found, a hotspot named 'HoloScope-XXXX' will start."
+echo "Hotspot Dashboard: http://192.168.4.1"
+echo "Please run 'sudo reboot' now."
