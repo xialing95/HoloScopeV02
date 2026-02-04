@@ -16,6 +16,16 @@ class NetworkManager:
         self.hotspot_name = "HoloscopeAP" 
         # The actual name people see on their phones
         self.ssid = f"{base_name}-{self.unique_id}"
+    
+    def _run_cmd(self, cmd):
+        """Helper to run shell commands safely - Must be inside the class"""
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return True, result.stdout
+        except subprocess.CalledProcessError as e:
+            # We use logger.error here (ensure logger is defined at top of file)
+            print(f"Command failed: {' '.join(cmd)} - {e.stderr}")
+            return False, e.stderr
 
     def _get_serial_last_four(self):
         """Fetches the last 4 characters of the Pi's serial number."""
