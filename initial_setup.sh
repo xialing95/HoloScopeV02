@@ -5,7 +5,16 @@ echo "Starting HoloScope Installation..."
 
 # 1. Update & Dependencies
 echo "Installing System Dependencies..."
-sudo apt update && sudo apt install -y python3-pip python3-venv nginx libcamera-dev gpiod network-manager
+sudo apt update && sudo apt install -y \
+python3-pip \
+python3-venv \
+nginx \
+libcamera-dev \
+gpiod \
+network-manager \
+python3-pil \
+libjpeg-dev \
+zlib1g-dev
 
 # 2. Virtual Environment Setup
 if [ ! -d "venv" ]; then
