@@ -132,6 +132,7 @@ class CameraManager:
                     "--timeout", str(burst_count * int(interval * 1000) + 500),
                     "--raw",
                     "--nopreview",
+                    "--thumb", "none",  # Removes the tiny 288x162 image
                     "-o", filename_pattern
                 ]
 
