@@ -77,6 +77,28 @@ sudo nmcli con up "HoloscopeAP"
 EOF
 chmod +x $INSTALL_DIR/autohotspot.sh
 
+# 1. Backup existing NetworkManager config
+echo "Backing up NetworkManager configuration..."
+sudo cp /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.bak
+
+# 2. Enable auth-polkit for better secret handling
+# This checks if the line exists; if not, it adds it under [main]
+if ! grep -q "auth-polkit=true" /etc/NetworkManager/NetworkManager.conf; then
+    echo "Enabling auto-secret processing (auth-polkit)..."
+    sudo sed -i '/\[main\]/a auth-polkit=true' /etc/NetworkManager/NetworkManager.conf
+fi
+
+# 3. Purge existing Wi-Fi profiles to prevent "stub" errors
+echo "Clearing old Wi-Fi profiles to prevent property conflicts..."
+# This loops through all '802-11-wireless' type connections and deletes them
+nmcli --terse --fields UUID,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | xargs -I {} sudo nmcli connection delete uuid {}
+
+# 4. Restart NetworkManager to apply changes
+echo "Restarting NetworkManager..."
+sudo systemctl restart NetworkManager
+
+echo "Fix applied. You can now connect using: sudo nmcli --ask dev wifi connect 'SSID'"
+
 # 7. Standardized Systemd Service
 sudo bash -c "cat > /etc/systemd/system/holoscope.service" <<EOF
 [Unit]
@@ -94,6 +116,8 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
+
+
 
 sudo systemctl daemon-reload
 sudo systemctl enable holoscope.service

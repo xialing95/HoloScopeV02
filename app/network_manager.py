@@ -84,7 +84,7 @@ class NetworkManager:
         display_manager.update_display(status=f"Joining {ssid}...", mode="NET-WIFI")
         
         try:
-            cmd = ["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", password]
+            cmd = ["sudo", "nmcli","--ask", "dev", "wifi", "connect", ssid, "password", password]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
