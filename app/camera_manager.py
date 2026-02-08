@@ -124,15 +124,29 @@ class CameraManager:
 
                 # Build the rpicam-still command
                 filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
+                # cmd = [
+                #     "rpicam-still",
+                #     "--shutter", str(self.settings["shutter"]),
+                #     "--gain", str(self.settings["iso"] / 100),
+                #     "--timelapse", str(int(interval * 1000)),
+                #     "--timeout", str(burst_count * int(interval * 1000) + 500),
+                #     "--raw",
+                #     "--nopreview",
+                #     "--thumb", "none",  # Removes the tiny 288x162 image
+                #     "-o", filename_pattern
+                # ]
+
                 cmd = [
                     "rpicam-still",
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)),
-                    "--timeout", str(burst_count * int(interval * 1000) + 500),
+                    "--timeout", str(int((burst_count - 1) * interval * 1000) + 500),
                     "--raw",
+                    "--raw-format", "mipi",  # Forces the 14MB packed format
+                    "--mode", "4608:2592:12:P", # 12-bit Packed (approx 18MB) or use :10:P for 14MB
                     "--nopreview",
-                    "--thumb", "none",  # Removes the tiny 288x162 image
+                    "--thumb", "none",
                     "-o", filename_pattern
                 ]
 
