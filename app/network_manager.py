@@ -17,14 +17,17 @@ class NetworkManager:
         # The actual name people see on their phones
         self.ssid = f"{base_name}-{self.unique_id}"
     
-    def _run_cmd(self, cmd):
-        """Helper to run shell commands safely - Must be inside the class"""
+    def _run_cmd(self, cmd, timeout=30):  # Add timeout here with a default
+        """Helper to run shell commands safely"""
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            # Pass the timeout variable into the subprocess call
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=timeout)
             return True, result.stdout
+        except subprocess.TimeoutExpired:
+            logger.error(f"Command timed out: {' '.join(cmd)}")
+            return False, "Timeout"
         except subprocess.CalledProcessError as e:
-            # We use logger.error here (ensure logger is defined at top of file)
-            print(f"Command failed: {' '.join(cmd)} - {e.stderr}")
+            logger.error(f"Command failed: {' '.join(cmd)} - {e.stderr}")
             return False, e.stderr
 
     def _get_serial_last_four(self):
@@ -106,6 +109,7 @@ class NetworkManager:
         else:
             logger.warning(f"WiFi failed: {output}. Reverting to AP.")
             # Fallback to the working Hotspot method
+            display_manager.update_display(status=f"WiFi failed. Reverting to AP.", mode="NET-WIFI")
             self.switch_to_hotspot()
             return False
 
