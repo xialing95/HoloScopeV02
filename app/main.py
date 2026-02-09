@@ -58,13 +58,15 @@ async def get_preview():
     cmd = [
         "rpicam-still",
         "-o", preview_path,
-        "--width", "1024", 
-        "--height", "768",
+        "--width", "2304", 
+        "--height", "1296",
         "--shutter", str(cam_manager.settings["shutter"]),
         "--gain", str(cam_manager.settings["iso"] / 100),
         "--nopreview",
         "--timeout", "1",
-        "--immediate"
+        "--immediate",
+        "--encoding", "jpg",
+        "--quality", "85" # Increased quality slightly since the file is smaller
     ]
 
     # Add AWB or Manual Gains
