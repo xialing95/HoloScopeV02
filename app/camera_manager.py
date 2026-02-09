@@ -123,7 +123,7 @@ class CameraManager:
                     log.write(f"----------------------------\n")
 
                 # Build the rpicam-still command
-                filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
+                filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.raw")
                 total_timeout_ms = int((burst_count * interval * 1000) + 2000)
                     
                 cmd = [
@@ -140,7 +140,7 @@ class CameraManager:
                     "--immediate",              # Start capturing as soon as the sensor is ready
                     "--latest", "none"          # Prevents creating extra 'latest' symlinks
                 ]
-                
+
                 if self.settings["awb_enabled"]:
                     cmd.extend(["--awb", "auto"])
                 else:
