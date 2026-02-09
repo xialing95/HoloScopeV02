@@ -85,31 +85,31 @@ class NetworkManager:
         logger.info(f"Transitioning to WiFi: {ssid}...")
         display_manager.update_display(status=f"Connecting...", mode="NET-WIFI")
         
-        # 1. Kill the Hotspot profile specifically
-        # Using 'con down' is better here than 'device disconnect' 
-        # because we want to stop the specific AP service.
+        # 1. Shutdown Hotspot and clear the interface
         self._run_cmd(["sudo", "nmcli", "con", "down", self.hotspot_name])
+        self._run_cmd(["sudo", "ip", "addr", "flush", "dev", self.interface])
+        
+        # 2. IMPORTANT: Delete old profile for THIS SSID to avoid the 'property missing' error
+        self._run_cmd(["sudo", "nmcli", "con", "delete", ssid])
         time.sleep(1)
 
-        # 2. Try to connect to the new WiFi
-        # We use 'dev wifi connect' because it creates the profile if it doesn't exist
+        # 3. Attempt connection
         cmd = [
             "sudo", "nmcli", "dev", "wifi", "connect", ssid, 
-            "password", password, "ifname", self.interface
+            "password", password, 
+            "ifname", self.interface
         ]
         
-        # Use a longer timeout (the Bash script uses 30s sleep; 45s timeout is safe)
+        # Ensure your _run_cmd now accepts the timeout argument!
         success, output = self._run_cmd(cmd, timeout=45)
 
         if success:
             logger.info(f"Connected to {ssid}")
-            time.sleep(2) # Brief settle for DHCP
+            time.sleep(2) 
             display_manager.update_display(status="WiFi Online", mode="IDLE")
             return True
         else:
-            logger.warning(f"WiFi failed: {output}. Reverting to AP.")
-            # Fallback to the working Hotspot method
-            display_manager.update_display(status=f"WiFi failed. Reverting to AP.", mode="NET-WIFI")
+            logger.warning(f"WiFi failed: {output}")
             self.switch_to_hotspot()
             return False
 
