@@ -123,7 +123,7 @@ class CameraManager:
                     log.write(f"----------------------------\n")
 
                 # Build the rpicam-still command
-                filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.raw")
+                filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
                 total_timeout_ms = int((burst_count * interval * 1000) + 2000)
                     
                 cmd = [
