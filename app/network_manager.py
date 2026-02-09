@@ -79,26 +79,33 @@ class NetworkManager:
         return success
 
     def switch_to_wifi(self, ssid, password):
-        """Attempts to connect to a WiFi network with a fallback to Hotspot"""
-        logger.info(f"Attempting to connect to WiFi: {ssid}...")
-        display_manager.update_display(status=f"Joining {ssid}...", mode="NET-WIFI")
+        logger.info(f"Transitioning to WiFi: {ssid}...")
+        display_manager.update_display(status=f"Connecting...", mode="NET-WIFI")
         
-        try:
-            cmd = ["sudo", "nmcli","--ask", "dev", "wifi", "connect", ssid, "password", password]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
-            if result.returncode == 0:
-                logger.info("WiFi Connected successfully!")
-                # Wait for DHCP to finish getting an IP
-                time.sleep(5) 
-                display_manager.update_display(status="WiFi Online", mode="IDLE")
-                return True
-            else:
-                raise Exception("WiFi auth failed")
+        # 1. Kill the Hotspot profile specifically
+        # Using 'con down' is better here than 'device disconnect' 
+        # because we want to stop the specific AP service.
+        self._run_cmd(["sudo", "nmcli", "con", "down", self.hotspot_name])
+        time.sleep(1)
 
-        except (subprocess.TimeoutExpired, Exception) as e:
-            logger.warning(f"Connection failed. Falling back to Hotspot: {e}")
-            display_manager.update_display(error="WiFi Fail: Fallback")
+        # 2. Try to connect to the new WiFi
+        # We use 'dev wifi connect' because it creates the profile if it doesn't exist
+        cmd = [
+            "sudo", "nmcli", "dev", "wifi", "connect", ssid, 
+            "password", password, "ifname", self.interface
+        ]
+        
+        # Use a longer timeout (the Bash script uses 30s sleep; 45s timeout is safe)
+        success, output = self._run_cmd(cmd, timeout=45)
+
+        if success:
+            logger.info(f"Connected to {ssid}")
+            time.sleep(2) # Brief settle for DHCP
+            display_manager.update_display(status="WiFi Online", mode="IDLE")
+            return True
+        else:
+            logger.warning(f"WiFi failed: {output}. Reverting to AP.")
+            # Fallback to the working Hotspot method
             self.switch_to_hotspot()
             return False
 
