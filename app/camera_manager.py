@@ -124,21 +124,17 @@ class CameraManager:
 
                 # Build the rpicam-still command
                 filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
-                total_timeout_ms = int((burst_count * interval * 1000) + 2000)
                     
                 cmd = [
                     "rpicam-still",
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)),
-                    "--timeout", str(total_timeout_ms),
-                    "--frames", str(burst_count),             # Add this!
+                    "--timeout", str(burst_count * int(interval * 1000) + 500),  # Total time for burst + buffer
                     "--raw",                    # Generate the DNG
                     "-o", filename_pattern,
                     "--nopreview",
                     "--thumb", "none",
-                    "--immediate",              # Start capturing as soon as the sensor is ready
-                    "--latest", "none"          # Prevents creating extra 'latest' symlinks
                 ]
 
                 if self.settings["awb_enabled"]:
