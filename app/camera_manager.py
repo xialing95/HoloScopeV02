@@ -132,7 +132,7 @@ class CameraManager:
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)),
                     "--timeout", str(total_timeout_ms),
-                    "--mode", "4608:2592:10:P", # 10-bit Packed (~14MB)
+                    "--frames", str(burst_count),             # Add this!
                     "--raw",                    # Generate the DNG
                     "-o", filename_pattern,
                     "--nopreview",
