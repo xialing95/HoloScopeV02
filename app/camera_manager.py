@@ -135,20 +135,22 @@ class CameraManager:
                 #     "--thumb", "none",  # Removes the tiny 288x162 image
                 #     "-o", filename_pattern
                 # ]
-
                 cmd = [
                     "rpicam-still",
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)),
-                    # Add a buffer to timeout to ensure the last frame completes
-                    "--timeout", str(int(burst_count * interval * 1000) + 2000), 
+                    "--timeout", str(int(burst_count * interval * 1000) + 2000),
+                    # 1. Use 10-bit Packed mode for ~14-15MB files
+                    "--mode", "4608:2592:10:P", 
+                    # 2. Tell the ISP to only output the RAW file
                     "--raw",
-                    # The 'P' in the mode string already specifies 'Packed' (MIPI)
-                    "--mode", "4608:2592:12:P", 
+                    "-o", filename_pattern,
+                    # 3. Suppress the JPEG entirely
+                    "--encoding", "none",
                     "--nopreview",
                     "--thumb", "none",
-                    "-o", filename_pattern
+                    "--immediate"
                 ]
 
                 if self.settings["awb_enabled"]:
