@@ -286,7 +286,7 @@ async def list_files():
     # os.walk goes into every subfolder inside PHOTO_DIR
     for root, dirs, files in os.walk(PHOTO_DIR):
         for f in files:
-            if f.endswith(('.jpg', '.png', '.dng', '.csv', '.txt')):
+            if f.endswith(('.jpg', '.png', '.dng', '.csv', '.txt', 'raw')):
                 # Get the path relative to PHOTO_DIR (e.g., "Project_123/image.dng")
                 relative_path = os.path.relpath(os.path.join(root, f), PHOTO_DIR)
                 all_files.append(relative_path)
