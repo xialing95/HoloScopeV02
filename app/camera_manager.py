@@ -124,35 +124,23 @@ class CameraManager:
 
                 # Build the rpicam-still command
                 filename_pattern = os.path.join(session_dir, f"{timestamp}_int{interval}_%04d.dng")
-                # cmd = [
-                #     "rpicam-still",
-                #     "--shutter", str(self.settings["shutter"]),
-                #     "--gain", str(self.settings["iso"] / 100),
-                #     "--timelapse", str(int(interval * 1000)),
-                #     "--timeout", str(burst_count * int(interval * 1000) + 500),
-                #     "--raw",
-                #     "--nopreview",
-                #     "--thumb", "none",  # Removes the tiny 288x162 image
-                #     "-o", filename_pattern
-                # ]
+                total_timeout_ms = int((burst_count * interval * 1000) + 2000)
+                    
                 cmd = [
                     "rpicam-still",
                     "--shutter", str(self.settings["shutter"]),
                     "--gain", str(self.settings["iso"] / 100),
                     "--timelapse", str(int(interval * 1000)),
-                    "--timeout", str(int(burst_count * interval * 1000) + 2000),
-                    # 1. Use 10-bit Packed mode for ~14-15MB files
-                    "--mode", "4608:2592:10:P", 
-                    # 2. Tell the ISP to only output the RAW file
-                    "--raw",
+                    "--timeout", str(total_timeout_ms),
+                    "--mode", "4608:2592:10:P", # 10-bit Packed (~14MB)
+                    "--raw",                    # Generate the DNG
                     "-o", filename_pattern,
-                    # 3. Suppress the JPEG entirely
-                    "--encoding", "none",
                     "--nopreview",
                     "--thumb", "none",
-                    "--immediate"
+                    "--immediate",              # Start capturing as soon as the sensor is ready
+                    "--latest", "none"          # Prevents creating extra 'latest' symlinks
                 ]
-
+                
                 if self.settings["awb_enabled"]:
                     cmd.extend(["--awb", "auto"])
                 else:
