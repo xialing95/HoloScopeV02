@@ -88,19 +88,25 @@
             <button id="save-settings-btn" class="btn-blue">Apply Camera Settings</button>
         </div>
 
-            <div class="card">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between;">
                 <h3>Live Sensors</h3>
-                <div class="sensor-grid">
-                    <div class="sensor-item">
-                        <span class="label">Temp</span>
-                        <span id="temp-val" class="value">--°C</span>
-                    </div>
-                    <div class="sensor-item">
-                        <span class="label">Humidity</span>
-                        <span id="hum-val" class="value">--%</span>
-                    </div>
+                <span id="i2c-status" style="font-size: 0.7em; font-weight: bold; color: #4CAF50;">● ONLINE</span>
+            </div>
+            <div class="sensor-grid">
+                <div class="sensor-item">
+                    <span class="label">Temp</span>
+                    <span id="temp-val" class="value">--°C</span>
+                </div>
+                <div class="sensor-item">
+                    <span class="label">Humidity</span>
+                    <span id="hum-val" class="value">--%</span>
                 </div>
             </div>
+            <button id="reconnect-btn" class="btn secondary" style="display: none; width: 100%; margin-top: 10px; font-size: 0.8em;">
+                Reconnect I2C Bus
+            </button>
+        </div>
 
         <div class="card">
             <h3>Environmental Logging Config</h3>

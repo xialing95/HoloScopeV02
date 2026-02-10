@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. Sensor Management
     listen('start-log-btn', startSensorLogging);
     listen('stop-log-btn', stopSensorLogging);
+    listen('reconnect-btn', handleI2CReconnect);
 
     // 7. Network
     listen('wifi-btn', () => handleNetworkUpdate('wifi'));
@@ -138,15 +139,50 @@ document.addEventListener('DOMContentLoaded', () => {
 async function updateSensors() {
     try {
         const response = await fetch(`${API_BASE}/sensors`);
-        if (!response.ok) throw new Error("Sensor data unavailable");
+        const statusEl = document.getElementById('i2c-status');
+        const btn = document.getElementById('reconnect-btn');
+
+        if (!response.ok) throw new Error();
         
         const data = await response.json();
         document.getElementById('temp-val').innerText = `${data.temp}°C`;
         document.getElementById('hum-val').innerText = `${data.humidity}%`;
+        
+        // Reset UI to 'Good' state
+        statusEl.innerText = "● ONLINE";
+        statusEl.style.color = "#4CAF50";
+        btn.style.display = 'none';
+
     } catch (err) {
-        // We don't notify 'error' here to avoid spamming the UI if the 
-        // sensor is just momentarily busy, but we log it.
-        console.warn("Sensor poll failed:", err);
+        const statusEl = document.getElementById('i2c-status');
+        const btn = document.getElementById('reconnect-btn');
+        
+        statusEl.innerText = "● BUS ERROR";
+        statusEl.style.color = "#f44336";
+        btn.style.display = 'block';
+    }
+}
+
+async function handleI2CReconnect() {
+    const btn = document.getElementById('reconnect-btn');
+    const status = document.getElementById('i2c-status');
+    
+    btn.disabled = true;
+    btn.innerText = "Attempting Reset...";
+    
+    try {
+        const response = await fetch(`${API_BASE}/reconnect-i2c`, { method: 'POST' });
+        if (response.ok) {
+            // Give the hardware a moment to settle
+            setTimeout(() => {
+                updateSensors();
+                btn.innerText = "🔄 Reconnect I2C Bus";
+                btn.disabled = false;
+            }, 500);
+        }
+    } catch (err) {
+        console.error("Reconnect failed", err);
+        btn.disabled = false;
     }
 }
 

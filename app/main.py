@@ -119,6 +119,13 @@ async def read_sensors():
         raise HTTPException(status_code=503, detail="BME680 sensor busy or not responding")
     return data
 
+@app.post("/api/reconnect-i2c")
+async def reconnect_i2c():
+    success = sensors.reconnect()
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to re-initialize I2C bus")
+    return {"status": "reconnected"}
+
 @app.post("/api/sensors/config")
 async def config_sensors(config: LogConfig):
     sensors.log_interval = config.interval

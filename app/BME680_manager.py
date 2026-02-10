@@ -10,30 +10,44 @@ class SensorManager:
         self.temp_offset = temp_offset
         self.log_enabled = False
         self.log_interval = 60
-        
-        try:
-            # Initialize I2C bus
-            i2c = board.I2C()  # uses board.SCL and board.SDA
-            # Initialize sensor (default address is 0x77)
-            self.sensor = adafruit_bme680.Adafruit_BME680_I2C(i2c, address=0x77)
-        except Exception as e:
-            try:
-                # Fallback to secondary address 0x76
-                self.sensor = adafruit_bme680.Adafruit_BME680_I2C(i2c, address=0x76)
-            except Exception as e2:
-                print(f"Could not find BME680 sensor: {e2}")
-                self.sensor = None
+        self.sensor = None
+        self.i2c = None
+        self.reconnect() # Use the new reconnect method to initialize
 
-        if self.sensor:
-            # Sea level pressure for altitude calculation (optional)
-            self.sensor.sea_level_pressure = 1013.25
-            # In the Adafruit library, gas is disabled by default unless you call it
+    def reconnect(self):
+        """Attempts to re-initialize the I2C bus and sensor object."""
+        try:
+            # Clear old references if they exist
+            self.sensor = None
+            self.i2c = None
+            
+            # Re-init I2C bus
+            self.i2c = board.I2C()
+            
+            # Try primary address 0x77
+            try:
+                self.sensor = adafruit_bme680.Adafruit_BME680_I2C(self.i2c, address=0x77)
+            except Exception:
+                # Fallback to secondary 0x76
+                self.sensor = adafruit_bme680.Adafruit_BME680_I2C(self.i2c, address=0x76)
+            
+            if self.sensor:
+                self.sensor.sea_level_pressure = 1013.25
+                print("BME680 Reconnected Successfully")
+                return True
+        except Exception as e:
+            print(f"I2C Reconnect Failed: {e}")
+            return False
+        return False
 
     def get_readings(self):
         if not self.sensor:
-            return None
+            # Try one auto-reconnect if sensor is missing
+            if not self.reconnect():
+                return None
         
         try:
+            # Accessing temperature triggers the I2C read
             return {
                 "temp": round(self.sensor.temperature + self.temp_offset, 2),
                 "humidity": round(self.sensor.relative_humidity, 2),
@@ -43,6 +57,9 @@ class SensorManager:
             }
         except Exception as e:
             print(f"Error reading sensor: {e}")
+            # If a read fails, it's often a bus hang; nulling sensor 
+            # forces the UI to show the 'Reconnect' button
+            self.sensor = None 
             return None
     
     def _logging_worker(self):
